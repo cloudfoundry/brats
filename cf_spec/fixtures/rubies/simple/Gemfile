@@ -1,0 +1,4 @@
+source 'https://rubygems.org'
+
+#ruby=<%= engine %>-<%=engine_version%>
+ruby '<%= ruby_version %>', :engine => '<%= engine %>', :engine_version => '<%= engine_version %>'

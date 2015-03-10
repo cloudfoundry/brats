@@ -1,0 +1,2 @@
+---
+  command: ruby -rwebrick -e "WEBrick::HTTPServer.new(:DocumentRoot => '.', :Port => $PORT).start"
