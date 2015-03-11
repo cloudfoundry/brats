@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+language=${1-""}; shift
+upload="true"
+
+while getopts ":d" o; do
+  case "${o}" in
+    d)
+      upload="false";;
+  esac
+done
+
+usage() {
+  echo "usage: $0 <ruby> -d"
+  echo ""
+  echo "Runs all brats against a specific CF hosted environment"
+  echo "   -d disables uploading buildpack"
+  exit 0
+}
+
+indent() {
+  echo -e "\n******* $1"
+}
+
+if [ "$language" == "" ]; then
+  usage
+fi
+
+indent "Fetching CF CLI details"
+cf api
+
+# the script will package and upload an "offline"
+
+upload_buildpack() {
+  local name=$1
+  pushd ~/workspace/$name-buildpack
+    indent "Creating cached buildpack $name"
+    BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager off
+    indent "Deleting previous buildpack"
+    cf delete-buildpack $name-brat-buildpack -f
+    indent "Uploading buildpack"
+    cf create-buildpack $name-brat-buildpack $(ls *_buildpack-offline*.zip | head -n 1) 100 --enable
+  popd
+}
+
+if [ "$upload" == "true" ]; then
+  upload_buildpack $language
+fi
+
+BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation cf_spec/integration/"$language"_spec.rb

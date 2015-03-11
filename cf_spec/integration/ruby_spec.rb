@@ -8,7 +8,7 @@ describe 'For all supported Ruby versions' do
       let(:ruby_version) { options[:version] }
       let(:engine) { options[:engine] }
       let(:engine_version) { options[:engine_version] }
-      let(:app) { Machete.deploy_app("rubies/tmp/#{ruby_version}/simple") }
+      let(:app) { Machete.deploy_app("rubies/tmp/#{ruby_version}/simple", buildpack: 'ruby-brat-buildpack') }
       let(:browser) { Machete::Browser.new(app) }
 
       specify do
