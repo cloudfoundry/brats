@@ -1,0 +1,9 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+
+PLATFORMS
+  <%= engine %>
+
+DEPENDENCIES
+
