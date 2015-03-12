@@ -51,4 +51,4 @@ if [ "$upload" == "true" ]; then
   upload_buildpack $language
 fi
 
-BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation cf_spec/integration/"$language"_spec.rb
+BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation --color cf_spec/integration/"$language"_spec.rb
