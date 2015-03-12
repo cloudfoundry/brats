@@ -5,10 +5,10 @@ describe 'For all supported Go versions' do
   def self.create_test_for(test_name, options={})
     options[:engine_version] ||= options[:version]
 
-    context "On #{ENV['CF_STACK']} with #{test_name}" do
+    context "with #{test_name}" do
       let(:app_name) { 'go/src/simple' }
       let(:version) { options[:version] }
-      let(:app) { Machete.deploy_app("go/tmp/#{version}/src/simple") }
+      let(:app) { Machete.deploy_app("go/tmp/#{version}/src/simple", buildpack: 'go-brat-buildpack') }
       let(:browser) { Machete::Browser.new(app) }
 
       specify do
@@ -21,12 +21,23 @@ describe 'For all supported Go versions' do
     end
   end
 
-  dependencies = YAML::load_file('manifests/go/manifest.yml')['dependencies']
+  dependencies = YAML::load(open('https://raw.githubusercontent.com/cloudfoundry/go-buildpack/master/manifest.yml').read)['dependencies']
 
-  dependencies.each do |dependency|
-    create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+  context 'On lucid64 stack' do
+    before { ENV['CF_STACK'] = 'lucid64' }
+
+    dependencies.each do |dependency|
+      create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+    end
   end
 
+  context 'On cflinuxfs2 stack' do
+    before { ENV['CF_STACK'] = 'cflinuxfs2' }
+
+    dependencies.each do |dependency|
+      create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+    end
+  end
 
   def assert_offline_mode_has_no_traffic
     expect(app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
