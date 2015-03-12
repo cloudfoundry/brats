@@ -5,14 +5,13 @@ PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
 STACK = ENV['CF_STACK']
 
 describe 'Deploying CF apps' do
-  context "on Stack: #{STACK}" do
+  context "on stack: #{STACK}" do
 
     YAML.load(
       open('https://raw.githubusercontent.com/cloudfoundry/nodejs-buildpack/master/manifest.yml').read
     )['dependencies'].select{ |node|
-      node['cf_stacks'].include? STACK
-    }.select { |node|
-      node['name'] == 'node'
+      node['name'] == 'node' &&
+      node['cf_stacks'].include?(STACK)
     }.each do |node|
       version = node['version']
 
