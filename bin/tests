@@ -37,11 +37,13 @@ upload_buildpack() {
   local name=$1
   pushd ~/workspace/$name-buildpack
     indent "Creating cached buildpack $name"
-    BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager off
+    pattern="*_buildpack-offline*.zip"
+    rm -f $pattern
+    BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager offline
     indent "Deleting previous buildpack"
     cf delete-buildpack $name-brat-buildpack -f
     indent "Uploading buildpack"
-    cf create-buildpack $name-brat-buildpack $(ls *_buildpack-offline*.zip | head -n 1) 100 --enable
+    cf create-buildpack $name-brat-buildpack $(ls $pattern | head -n 1) 100 --enable
   popd
 }
 
