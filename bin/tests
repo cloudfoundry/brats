@@ -13,10 +13,7 @@ usage() {
   Options:
       [--language=LANGUAGE] # REQUIRED - Specifies the set of binaries to be tested.
                             # Possible values: ruby, python, go, nodejs, php
-      [--stack=STACK]       # Specifies the stack that the test will run against.
-                            # Default: lucid64
-                            # Possible values: lucid64, cflinuxfs2
-      [--no-upload]         # Specifies whether to upload local buildpack to cf. Overrides '--no-build' flag to true.
+      [--no-upload]         # Specifies whether to upload local buildpack to cf.
                             # Default: false"
   exit 1
 }
@@ -25,41 +22,12 @@ indent() {
   echo -e "\n******* $1"
 }
 
-validate_stack_option() {
-  if ([ "$stack" != "lucid64" ] && [ "$stack" != "cflinuxfs2" ]); then
-    echo -e 'ERROR: Invalid argument passed in for --stack option. \n' \
-      'The valid --stack options are [ "lucid64", "cflinuxfs2" ]'
-    exit 1
-  fi
-}
-
-configure_stack() {
-  if [ "$host" == "" ]; then
-    host=10.244.0.34.xip.io
-    export VAGRANT_CWD="$HOME/workspace/bosh-lite"
-    $VAGRANT_CWD/bin/add-route
-  fi
-
-  indent "Using the stack '$stack' against the host '$host'"
-}
-
 while [ "$#" -gt 0 ]; do
   case $1 in
     -h|-\?|--help|help)
         usage
         exit
         ;;
-    --stack)
-      if [ "$#" -gt 1 ]; then
-        stack=$2
-        validate_stack_option
-        shift 2
-        continue
-      else
-        echo 'ERROR: Must specify a non-empty "--stack STACK" argument.'
-        exit 1
-      fi
-      ;;
     --language=*)
       if [ "$#" == "" ]; then
         usage
@@ -67,19 +35,8 @@ while [ "$#" -gt 0 ]; do
         language=${1#*=}
       fi
       ;;
-    --stack=*)
-      stack=${1#*=}
-      validate_stack_option
-      ;;
-    --host=*)
-      host=${1#*=}
-      ;;
     --no-upload)
       should_upload=false;;
-    --)
-      shift
-      break
-      ;;
     -?*)
       echo "Unrecognized option ($1) submitted"
       usage
@@ -93,15 +50,13 @@ done
 indent "Fetching CF CLI details"
 cf api
 
-# the script will package and upload an "offline"
-
 upload_buildpack() {
   local name=$1
   pushd ~/workspace/$name-buildpack
     indent "Creating cached buildpack $name"
-    pattern="*_buildpack-offline*.zip"
+    pattern="*_buildpack-cached*.zip"
     rm -f $pattern
-    BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager offline
+    BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager cached
     indent "Deleting previous buildpack"
     cf delete-buildpack $name-brat-buildpack -f
     indent "Uploading buildpack"
@@ -113,4 +68,4 @@ if [ "$should_upload" == "true" ]; then
   upload_buildpack $language
 fi
 
-BUNDLE_GEMFILE=cf.Gemfile CF_STACK=$stack rspec -f documentation --color cf_spec/integration/"$language"_spec.rb $rspec_options
+BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation --color cf_spec/integration/"$language"_spec.rb
