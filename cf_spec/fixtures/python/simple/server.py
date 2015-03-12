@@ -12,10 +12,10 @@ class requestHandler(BaseHTTPRequestHandler):
         s.send_response(200)
         s.send_header("Content-type", "text/html")
         s.end_headers()
-        s.wfile.write("<html>")
-        s.wfile.write("<head><title>Python app.</title></head>")
-        s.wfile.write("<body><p>Hello, World</p></body>")
-        s.wfile.write("</html>")
+        s.wfile.write("<html>".encode("utf-8"))
+        s.wfile.write("<head><title>Python app.</title></head>".encode("utf-8"))
+        s.wfile.write("<body><p>Hello, World</p></body>".encode("utf-8"))
+        s.wfile.write("</html>".encode("utf-8"))
         return
 
 web_server = HTTPServer(('0.0.0.0', port), requestHandler)
