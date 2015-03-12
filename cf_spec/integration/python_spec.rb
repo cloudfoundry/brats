@@ -5,10 +5,10 @@ describe 'For all supported Python versions' do
   def self.create_test_for(test_name, options={})
     options[:engine_version] ||= options[:version]
 
-    context "On #{ENV['CF_STACK']} with #{test_name}" do
+    context "with #{test_name}" do
       let(:app_name) { 'python' }
       let(:version) { options[:version] }
-      let(:app) { Machete.deploy_app("python/tmp/#{version}/simple") }
+      let(:app) { Machete.deploy_app("python/tmp/#{version}/simple", buildpack: 'python-brat-buildpack') }
       let(:browser) { Machete::Browser.new(app) }
 
       specify do
@@ -21,11 +21,25 @@ describe 'For all supported Python versions' do
     end
   end
 
-  dependencies = YAML::load_file('manifests/python/manifest.yml')['dependencies']
+  dependencies = YAML::load(open('https://raw.githubusercontent.com/cloudfoundry/python-buildpack/master/manifest.yml').read)['dependencies']
 
-  dependencies.each do |dependency|
-    if dependency['cf_stacks'].include?(ENV['CF_STACK']) && dependency['name'] == 'python'
-      create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+  context 'On lucid64 stack' do
+    before { ENV['CF_STACK'] = 'lucid64' }
+
+    dependencies.each do |dependency|
+      if dependency['name'] == 'python' && dependency['cf_stacks'].include?('lucid64')
+        create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+      end
+    end
+  end
+
+  context 'On cflinuxfs2 stack' do
+    before { ENV['CF_STACK'] = 'cflinuxfs2' }
+
+    dependencies.each do |dependency|
+      if dependency['name'] == 'python' && dependency['cf_stacks'].include?('cflinuxfs2')
+        create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+      end
     end
   end
 
