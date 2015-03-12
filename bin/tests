@@ -2,31 +2,93 @@
 
 set -eo pipefail
 
-language=${1-""}; shift
-upload="true"
+stack=lucid64
+should_upload=true
+host=""
 
-while getopts ":d" o; do
-  case "${o}" in
-    d)
-      upload="false";;
-  esac
-done
 
 usage() {
-  echo "usage: $0 <ruby> -d"
-  echo ""
-  echo "Runs all brats against a specific CF hosted environment"
-  echo "   -d disables uploading buildpack"
-  exit 0
+  echo "Usage: $0
+
+  Options:
+      [--language=LANGUAGE] # REQUIRED - Specifies the set of binaries to be tested.
+                            # Possible values: ruby, python, go, nodejs, php
+      [--stack=STACK]       # Specifies the stack that the test will run against.
+                            # Default: lucid64
+                            # Possible values: lucid64, cflinuxfs2
+      [--no-upload]         # Specifies whether to upload local buildpack to cf. Overrides '--no-build' flag to true.
+                            # Default: false"
+  exit 1
 }
 
 indent() {
   echo -e "\n******* $1"
 }
 
-if [ "$language" == "" ]; then
-  usage
-fi
+validate_stack_option() {
+  if ([ "$stack" != "lucid64" ] && [ "$stack" != "cflinuxfs2" ]); then
+    echo -e 'ERROR: Invalid argument passed in for --stack option. \n' \
+      'The valid --stack options are [ "lucid64", "cflinuxfs2" ]'
+    exit 1
+  fi
+}
+
+configure_stack() {
+  if [ "$host" == "" ]; then
+    host=10.244.0.34.xip.io
+    export VAGRANT_CWD="$HOME/workspace/bosh-lite"
+    $VAGRANT_CWD/bin/add-route
+  fi
+
+  indent "Using the stack '$stack' against the host '$host'"
+}
+
+while [ "$#" -gt 0 ]; do
+  case $1 in
+    -h|-\?|--help|help)
+        usage
+        exit
+        ;;
+    --stack)
+      if [ "$#" -gt 1 ]; then
+        stack=$2
+        validate_stack_option
+        shift 2
+        continue
+      else
+        echo 'ERROR: Must specify a non-empty "--stack STACK" argument.'
+        exit 1
+      fi
+      ;;
+    --language=*)
+      if [ "$#" == "" ]; then
+        usage
+      else
+        language=${1#*=}
+      fi
+      ;;
+    --stack=*)
+      stack=${1#*=}
+      validate_stack_option
+      ;;
+    --host=*)
+      host=${1#*=}
+      ;;
+    --no-upload)
+      should_upload=false;;
+    --)
+      shift
+      break
+      ;;
+    -?*)
+      echo "Unrecognized option ($1) submitted"
+      usage
+      ;;
+    *)
+  esac
+  shift
+done
+
 
 indent "Fetching CF CLI details"
 cf api
@@ -47,8 +109,8 @@ upload_buildpack() {
   popd
 }
 
-if [ "$upload" == "true" ]; then
+if [ "$should_upload" == "true" ]; then
   upload_buildpack $language
 fi
 
-BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation --color cf_spec/integration/"$language"_spec.rb
+BUNDLE_GEMFILE=cf.Gemfile CF_STACK=$stack rspec -f documentation --color cf_spec/integration/"$language"_spec.rb $rspec_options
