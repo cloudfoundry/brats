@@ -29,7 +29,6 @@ describe 'For all supported Ruby versions' do
     before { ENV['CF_STACK'] = 'lucid64' }
 
     create_test_for('Ruby 1.8.7', engine: 'ruby', version: '1.8.7')
-    create_test_for('Ruby 1.9.2', engine: 'ruby', version: '1.9.2')
     create_test_for('Ruby 1.9.3', engine: 'ruby', version: '1.9.3')
     create_test_for('Ruby 2.0.0', engine: 'ruby', version: '2.0.0')
     create_test_for('Ruby 2.1.0', engine: 'ruby', version: '2.1.0')
@@ -80,7 +79,6 @@ describe 'For all supported Ruby versions' do
   context 'On cflinuxfs2 stack' do
     before { ENV['CF_STACK'] = 'cflinuxfs2' }
 
-    create_test_for('Ruby 1.9.2', engine: 'ruby', version: '1.9.2')
     create_test_for('Ruby 1.9.3', engine: 'ruby', version: '1.9.3')
     create_test_for('Ruby 2.0.0', engine: 'ruby', version: '2.0.0')
     create_test_for('Ruby 2.1.2', engine: 'ruby', version: '2.1.2')
