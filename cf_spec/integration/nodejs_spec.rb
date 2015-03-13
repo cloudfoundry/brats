@@ -2,48 +2,62 @@ require_relative '../spec_helper'
 
 FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple"
 PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
-STACK = ENV['CF_STACK']
+
+RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
+
+  context "with node-#{node_version}" do
+
+    before :all do
+      create_package_json(node_version)
+      @app = Machete.deploy_app('nodejs/simple', buildpack: 'nodejs-brat-buildpack')
+      @browser = Machete::Browser.new(@app)
+    end
+
+    it 'should be running' do
+      2.times do
+        @browser.visit_path('/')
+        expect(@browser).to have_body('Hello World!')
+      end
+    end
+
+    it 'should have the correct version' do
+      expect(@app).to have_logged("-----> Resolved node version: #{node_version}")
+    end
+
+    it 'should not have internet traffic with a cached buildpack' do
+      expect(@app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
+    end
+
+    after :all do
+      FileUtils.rm PACKAGE_JSON
+    end
+  end
+end
 
 describe 'Deploying CF apps' do
-  context "on stack: #{STACK}" do
 
-    YAML.load(
-      open('https://raw.githubusercontent.com/cloudfoundry/nodejs-buildpack/master/manifest.yml').read
-    )['dependencies'].select{ |node|
-      node['name'] == 'node' &&
-      node['cf_stacks'].include?(STACK)
-    }.each do |node|
-      version = node['version']
+  nodes = YAML.load(
+    open('https://raw.githubusercontent.com/cloudfoundry/nodejs-buildpack/master/manifest.yml').read
+  )['dependencies'].select { |node|
+    node['name'] == 'node'
+  }
 
-      describe "with node-#{version}" do
+  ['lucid64', 'cflinuxfs2'].each do |stack|
+    context "on the #{stack} stack" do
 
-        before :all do
-          create_package_json(version)
-          @app = Machete.deploy_app('nodejs/simple')
-          @browser = Machete::Browser.new(@app)
-        end
+      before :all do
+        ENV['CF_STACK'] = stack
+      end
 
-        it 'should be running' do
-          2.times do
-            @browser.visit_path('/')
-            expect(@browser).to have_body('Hello World!')
-          end
-        end
+      nodes.select { |node|
+        node['cf_stacks'].include?(stack)
+      }.each do |node|
 
-        it 'should have the correct version' do
-          expect(@app).to have_logged("-----> Resolved node version: #{version}")
-        end
-
-        it 'should not have internet traffic with a cached buildpack' do
-          expect(@app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
-        end
-
-        after :all do
-          FileUtils.rm PACKAGE_JSON
-        end
+        it_behaves_like :a_deploy_of_nodejs_app_to_cf, node['version']
       end
     end
   end
+
 end
 
 def create_package_json(node_engine)
