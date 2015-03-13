@@ -46,6 +46,9 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
+if [ "$language" == "" ]; then
+  usage
+fi
 
 indent "Fetching CF CLI details"
 cf api
