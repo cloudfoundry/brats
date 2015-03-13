@@ -8,11 +8,11 @@ describe 'For all supported Ruby versions' do
       let(:ruby_version) { options[:version] }
       let(:engine) { options[:engine] }
       let(:engine_version) { options[:engine_version] }
-      let(:app) { Machete.deploy_app("rubies/tmp/#{ruby_version}/simple", buildpack: 'ruby-brat-buildpack') }
+      let(:app) { Machete.deploy_app("rubies/tmp/#{ruby_version}/simple_brats", buildpack: 'ruby-brat-buildpack') }
       let(:browser) { Machete::Browser.new(app) }
 
       specify do
-        generate_app('simple', ruby_version, engine, engine_version)
+        generate_app('simple_brats', ruby_version, engine, engine_version)
         assert_ruby_version_installed(ruby_version)
 
         unless engine == 'ruby'

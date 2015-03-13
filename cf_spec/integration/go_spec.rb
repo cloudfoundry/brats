@@ -6,13 +6,12 @@ describe 'For all supported Go versions' do
     options[:engine_version] ||= options[:version]
 
     context "with #{test_name}" do
-      let(:app_name) { 'go/src/simple' }
       let(:version) { options[:version] }
-      let(:app) { Machete.deploy_app("go/tmp/#{version}/src/simple", buildpack: 'go-brat-buildpack') }
+      let(:app) { Machete.deploy_app("go/tmp/#{version}/src/simple_brats", buildpack: 'go-brat-buildpack') }
       let(:browser) { Machete::Browser.new(app) }
 
       specify do
-        generate_app('simple', version)
+        generate_app('simple_brats', version)
         assert_correct_version_installed(version)
 
         assert_root_contains('Hello, World')

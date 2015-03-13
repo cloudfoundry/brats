@@ -8,11 +8,11 @@ describe 'For all supported Python versions' do
     context "with #{test_name}" do
       let(:app_name) { 'python' }
       let(:version) { options[:version] }
-      let(:app) { Machete.deploy_app("python/tmp/#{version}/simple", buildpack: 'python-brat-buildpack') }
+      let(:app) { Machete.deploy_app("python/tmp/#{version}/simple_brats", buildpack: 'python-brat-buildpack') }
       let(:browser) { Machete::Browser.new(app) }
 
       specify do
-        generate_app('simple', version)
+        generate_app('simple_brats', version)
         assert_correct_version_installed(version)
 
         assert_root_contains('Hello, World')

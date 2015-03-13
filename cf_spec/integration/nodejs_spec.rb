@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple"
+FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
 PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
 
 RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
@@ -9,7 +9,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
 
     before :all do
       create_package_json(node_version)
-      @app = Machete.deploy_app('nodejs/simple', buildpack: 'nodejs-brat-buildpack')
+      @app = Machete.deploy_app('nodejs/simple_brats', buildpack: 'nodejs-brat-buildpack')
       @browser = Machete::Browser.new(@app)
     end
 
