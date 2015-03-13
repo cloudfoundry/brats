@@ -5,7 +5,7 @@ set -eo pipefail
 stack=lucid64
 should_upload=true
 host=""
-
+BUILDPACK_WORKSPACE=${BUILDPACK_WORKSPACE:-${HOME}/workspace}
 
 usage() {
   echo "Usage: $0
@@ -52,7 +52,7 @@ cf api
 
 upload_buildpack() {
   local name=$1
-  pushd ~/workspace/$name-buildpack
+  pushd ${BUILDPACK_WORKSPACE}/$name-buildpack
     indent "Creating cached buildpack $name"
     pattern="*_buildpack-cached*.zip"
     rm -f $pattern
