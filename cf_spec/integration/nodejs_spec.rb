@@ -14,6 +14,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
     end
 
     it 'should be running' do
+      expect(@app).to be_running
       2.times do
         @browser.visit_path('/')
         expect(@browser).to have_body('Hello World!')
