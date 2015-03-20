@@ -2,9 +2,8 @@ source "https://rubygems.org"
 
 ruby '2.1.1'
 
-gem 'machete', github: 'cf-buildpacks/machete', tag: 'v0.0.3'
-gem 'buildpack-packager', github: 'cloudfoundry-incubator/buildpack-packager', tag: 'v2.0.0'
-
-group :development do
-  gem 'pry'
-end
+gem 'machete', git: 'https://github.com/cf-buildpacks/machete', tag: 'v0.0.4'
+gem 'buildpack-packager', git: 'https://github.com/cloudfoundry-incubator/buildpack-packager', tag: 'v2.1.0'
+gem 'rspec'
+gem 'rspec-instafail'
+gem 'pry'
