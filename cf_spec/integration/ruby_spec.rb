@@ -74,6 +74,12 @@ describe 'For all supported Ruby versions' do
     create_test_for('JRuby 1.7.11 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.11', version: '1.8.7')
     create_test_for('JRuby 1.7.11 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.11', version: '1.9.3')
     create_test_for('JRuby 1.7.11 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.11', version: '2.0.0')
+
+    create_test_for('JRuby 1.7.19 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.19', version: '1.8.7')
+    create_test_for('JRuby 1.7.19 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.19', version: '1.9.3')
+    create_test_for('JRuby 1.7.19 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.19', version: '2.0.0')
+
+    create_test_for('JRuby 9.0.0.0.pre1 Ruby 2.2.0', engine: 'jruby', engine_version: '9.0.0.0.pre1', version: '2.2.0')
   end
 
   context 'On cflinuxfs2 stack' do
@@ -122,6 +128,12 @@ describe 'For all supported Ruby versions' do
     create_test_for('JRuby 1.7.11 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.11', version: '1.8.7')
     create_test_for('JRuby 1.7.11 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.11', version: '1.9.3')
     create_test_for('JRuby 1.7.11 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.11', version: '2.0.0')
+
+    create_test_for('JRuby 1.7.19 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.19', version: '1.8.7')
+    create_test_for('JRuby 1.7.19 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.19', version: '1.9.3')
+    create_test_for('JRuby 1.7.19 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.19', version: '2.0.0')
+
+    create_test_for('JRuby 9.0.0.0.pre1 Ruby 2.2.0', engine: 'jruby', engine_version: '9.0.0.0.pre1', version: '2.2.0')
   end
 
   def assert_offline_mode_has_no_traffic
