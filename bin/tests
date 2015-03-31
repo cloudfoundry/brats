@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -l
 
 set -eo pipefail
 
@@ -20,6 +20,16 @@ usage() {
 
 indent() {
   echo -e "\n******* $1"
+}
+
+configure_ruby_version() {
+  if [ -d $HOME/.rvm/bin ] ; then
+    indent "Configuring RVM"
+    export PATH=$HOME/.rvm/bin:$PATH
+    rvm use 2.1.5
+  else
+    indent "Using default ruby"
+  fi
 }
 
 while [ "$#" -gt 0 ]; do
@@ -50,6 +60,7 @@ if [ "$language" == "" ]; then
   usage
 fi
 
+configure_ruby_version
 indent "Fetching CF CLI details"
 cf api
 
