@@ -91,3 +91,4 @@ fi
 trap on_close INT
 
 BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation --color cf_spec/integration/"$language"_spec.rb
+on_close
