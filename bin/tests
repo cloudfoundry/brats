@@ -78,8 +78,15 @@ upload_buildpack() {
   popd
 }
 
+on_close() {
+  cf delete-buildpack $language-brat-buildpack -f
+  cf delete simple_brats -f
+}
+
 if [ "$should_upload" == "true" ]; then
   upload_buildpack $language
 fi
+
+trap on_close INT
 
 BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation --color cf_spec/integration/"$language"_spec.rb
