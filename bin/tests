@@ -1,6 +1,7 @@
 #!/usr/bin/env bash -l
 
-set -eo pipefail
+set -o pipefail
+trap 'echo "error in $0 ${BASH_SOURCE} ${LINENO}"' ERR
 
 stack=lucid64
 should_upload=true
