@@ -8,8 +8,16 @@ describe 'For all supported Ruby versions' do
       let(:ruby_version) { options[:version] }
       let(:engine) { options[:engine] }
       let(:engine_version) { options[:engine_version] }
-      let(:app) { Machete.deploy_app("rubies/tmp/#{ruby_version}/simple_brats", buildpack: 'ruby-brat-buildpack') }
+      let(:app) do
+        Machete.deploy_app(
+          "rubies/tmp/#{ruby_version}/simple_brats", 
+          name: "simple-ruby-#{Time.now.to_i}",
+          buildpack: 'ruby-brat-buildpack'
+        )
+      end
       let(:browser) { Machete::Browser.new(app) }
+
+      after { Machete::CF::DeleteApp.new.execute(app) }
 
       specify do
         generate_app('simple_brats', ruby_version, engine, engine_version)
@@ -20,7 +28,6 @@ describe 'For all supported Ruby versions' do
         end
 
         assert_root_contains('Hello, World')
-        assert_offline_mode_has_no_traffic
       end
     end
   end
@@ -134,10 +141,6 @@ describe 'For all supported Ruby versions' do
     create_test_for('JRuby 1.7.19 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.19', version: '2.0.0')
 
     create_test_for('JRuby 9.0.0.0.pre1 Ruby 2.2.0', engine: 'jruby', engine_version: '9.0.0.0.pre1', version: '2.2.0')
-  end
-
-  def assert_offline_mode_has_no_traffic
-    expect(app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
   end
 
   def generate_app(app_name, ruby_version, engine, engine_version)

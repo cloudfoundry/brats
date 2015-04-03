@@ -9,7 +9,11 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
 
     before :all do
       create_package_json(node_version)
-      @app     = Machete.deploy_app('nodejs/simple_brats', buildpack: 'nodejs-brat-buildpack')
+      @app = Machete.deploy_app(
+        'nodejs/simple_brats',
+        name: "simple-nodejs-#{Time.now.to_i}",
+        buildpack: 'nodejs-brat-buildpack'
+      )
       @browser = Machete::Browser.new(@app)
     end
 
@@ -25,11 +29,8 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
       expect(@app).to have_logged("Downloading and installing node #{node_version}")
     end
 
-    it 'should not have internet traffic with a cached buildpack' do
-      expect(@app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
-    end
-
     after :all do
+      Machete::CF::DeleteApp.new.execute(@app)
       FileUtils.rm PACKAGE_JSON
     end
   end

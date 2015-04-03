@@ -19,7 +19,11 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_ser
         :web_server         => web_server,
         :web_server_version => web_server_version
       })
-      @app = Machete.deploy_app('php/simple_brats', buildpack: 'php-brat-buildpack')
+      @app = Machete.deploy_app(
+        'php/simple_brats',
+        name: "simple-php-#{Time.now.to_i}",
+        buildpack: 'php-brat-buildpack'
+      )
       @browser = Machete::Browser.new(@app)
     end
 
@@ -36,11 +40,8 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_ser
       expect(@app).to have_logged("#{php_runtime.upcase} #{runtime_version}")
     end
 
-    it 'should not have internet traffic with a cached buildpack' do
-      expect(@app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
-    end
-
     after :all do
+      Machete::CF::DeleteApp.new.execute(@app)
       FileUtils.rm OPTIONS_JSON
     end
   end

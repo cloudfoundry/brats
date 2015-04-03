@@ -8,15 +8,22 @@ describe 'For all supported Python versions' do
     context "with #{test_name}" do
       let(:app_name) { 'python' }
       let(:version) { options[:version] }
-      let(:app) { Machete.deploy_app("python/tmp/#{version}/simple_brats", buildpack: 'python-brat-buildpack') }
+      let(:app) do
+        Machete.deploy_app(
+          "python/tmp/#{version}/simple_brats",
+          name: "simple-python-#{Time.now.to_i}",
+          buildpack: 'python-brat-buildpack'
+        )
+      end
       let(:browser) { Machete::Browser.new(app) }
+
+      after { Machete::CF::DeployApp.new.execute(app) }
 
       specify do
         generate_app('simple_brats', version)
         assert_correct_version_installed(version)
 
         assert_root_contains('Hello, World')
-        assert_offline_mode_has_no_traffic
       end
     end
   end
@@ -41,11 +48,6 @@ describe 'For all supported Python versions' do
         create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
       end
     end
-  end
-
-
-  def assert_offline_mode_has_no_traffic
-    expect(app.host).not_to have_internet_traffic if Machete::BuildpackMode.offline?
   end
 
   def generate_app(app_name, version)

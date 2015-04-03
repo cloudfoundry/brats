@@ -81,7 +81,6 @@ upload_buildpack() {
 
 on_close() {
   cf delete-buildpack $language-brat-buildpack -f
-  cf delete simple_brats -f
 }
 
 if [ "$should_upload" == "true" ]; then
