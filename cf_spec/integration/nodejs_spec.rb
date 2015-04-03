@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
+FIXTURE_DIR  = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
 PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
 
 RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
@@ -9,7 +9,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
 
     before :all do
       create_package_json(node_version)
-      @app = Machete.deploy_app('nodejs/simple_brats', buildpack: 'nodejs-brat-buildpack')
+      @app     = Machete.deploy_app('nodejs/simple_brats', buildpack: 'nodejs-brat-buildpack')
       @browser = Machete::Browser.new(@app)
     end
 
@@ -22,7 +22,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
     end
 
     it 'should have the correct version' do
-      expect(@app).to have_logged("-----> Resolved node version: #{node_version}")
+      expect(@app).to have_logged("Downloading and installing node #{node_version}")
     end
 
     it 'should not have internet traffic with a cached buildpack' do
