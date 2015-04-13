@@ -67,16 +67,24 @@ cf api
 
 upload_buildpack() {
   local name=$1
-  pushd ${BUILDPACK_WORKSPACE}/$name-buildpack
+
+  indent "Checking out buildpack"
+  mkdir -p tmp/
+  git clone https://github.com/cloudfoundry/$name-buildpack tmp/$name-buildpack
+
+  pushd tmp/$name-buildpack
+    git submodule update --init --recursive
+
     indent "Creating cached buildpack $name"
-    pattern="*_buildpack-cached*.zip"
-    rm -f $pattern
     BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager cached
     indent "Deleting previous buildpack"
     cf delete-buildpack $name-brat-buildpack -f
     indent "Uploading buildpack"
+    pattern="*_buildpack-cached*.zip"
     cf create-buildpack $name-brat-buildpack $(ls $pattern | head -n 1) 100 --enable
   popd
+
+  rm -Rf tmp/$name-buildpack
 }
 
 on_close() {
