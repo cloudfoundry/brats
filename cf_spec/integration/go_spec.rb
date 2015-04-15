@@ -2,6 +2,10 @@ require 'spec_helper'
 require 'yaml'
 
 describe 'For all supported Go versions' do
+  def self.dependencies
+    parsed_manifest(buildpack: 'go').fetch('dependencies')
+  end
+
   def self.create_test_for(test_name, options={})
     options[:engine_version] ||= options[:version]
 
@@ -26,8 +30,6 @@ describe 'For all supported Go versions' do
       end
     end
   end
-
-  dependencies = YAML::load(open('https://raw.githubusercontent.com/cloudfoundry/go-buildpack/master/manifest.yml').read)['dependencies']
 
   context 'On lucid64 stack' do
     before { ENV['CF_STACK'] = 'lucid64' }

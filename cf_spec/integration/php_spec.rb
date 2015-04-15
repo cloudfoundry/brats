@@ -48,15 +48,15 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_ser
 end
 
 describe 'Deploying CF apps' do
-
-  binaries = YAML.load(
-    open('https://raw.githubusercontent.com/cloudfoundry/php-buildpack/master/manifest.yml').read
-  )['dependencies']
+  def self.dependencies
+    parsed_manifest(buildpack: 'php')
+      .fetch('dependencies')
+  end
 
   valid_php_runtimes = ['php', 'hhvm']
   valid_web_servers  = ['httpd', 'nginx']
-  php_runtimes       = binaries.select {|binary| valid_php_runtimes.include?(binary['name']) }
-  web_servers        = binaries.select {|binary| valid_web_servers.include?(binary['name']) }
+  php_runtimes       = dependencies.select {|binary| valid_php_runtimes.include?(binary['name']) }
+  web_servers        = dependencies.select {|binary| valid_web_servers.include?(binary['name']) }
 
   ['lucid64', 'cflinuxfs2'].each do |stack|
     context "on the #{stack} stack" do

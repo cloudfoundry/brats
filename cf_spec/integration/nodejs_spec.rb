@@ -26,7 +26,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
     end
 
     it 'should have the correct version' do
-      expect(@app).to have_logged("Downloading and installing node #{node_version}")
+      expect(@app).to have_logged("Resolved node version: #{node_version}")
     end
 
     after :all do
@@ -37,12 +37,11 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
 end
 
 describe 'Deploying CF apps' do
-
-  nodes = YAML.load(
-    open('https://raw.githubusercontent.com/cloudfoundry/nodejs-buildpack/master/manifest.yml').read
-  )['dependencies'].select { |node|
-    node['name'] == 'node'
-  }
+  def self.nodes
+    parsed_manifest(buildpack: 'nodejs')
+      .fetch('dependencies')
+      .select{|d| d['name'] == 'node'}
+  end
 
   ['lucid64', 'cflinuxfs2'].each do |stack|
     context "on the #{stack} stack" do

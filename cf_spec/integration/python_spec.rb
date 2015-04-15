@@ -2,6 +2,11 @@ require 'spec_helper'
 require 'yaml'
 
 describe 'For all supported Python versions' do
+  def self.dependencies
+    parsed_manifest(buildpack: 'python')
+      .fetch('dependencies')
+  end
+
   def self.create_test_for(test_name, options={})
     options[:engine_version] ||= options[:version]
 
@@ -17,7 +22,7 @@ describe 'For all supported Python versions' do
       end
       let(:browser) { Machete::Browser.new(app) }
 
-      after { Machete::CF::DeployApp.new.execute(app) }
+      after { Machete::CF::DeleteApp.new.execute(app) }
 
       specify do
         generate_app('simple_brats', version)
@@ -27,8 +32,6 @@ describe 'For all supported Python versions' do
       end
     end
   end
-
-  dependencies = YAML::load(open('https://raw.githubusercontent.com/cloudfoundry/python-buildpack/master/manifest.yml').read)['dependencies']
 
   context 'On lucid64 stack' do
     before { ENV['CF_STACK'] = 'lucid64' }
