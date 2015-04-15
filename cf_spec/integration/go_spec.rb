@@ -60,7 +60,7 @@ describe 'For all supported Go versions' do
   end
 
   def assert_correct_version_installed(version)
-    expect(app).to be_running
+    expect(app).to be_running(120)
     expect(app).to have_logged "Installing go#{version}"
   end
 
