@@ -83,11 +83,10 @@ upload_buildpack() {
     pattern="*_buildpack-cached*.zip"
     cf create-buildpack $name-brat-buildpack $(ls $pattern | head -n 1) 100 --enable
   popd
-
-  rm -Rf tmp/$name-buildpack
 }
 
 on_close() {
+  rm -Rf tmp/$language-buildpack
   cf delete-buildpack $language-brat-buildpack -f
 }
 
