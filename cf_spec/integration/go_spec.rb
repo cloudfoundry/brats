@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 require 'yaml'
 
 describe 'For all supported Go versions' do

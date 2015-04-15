@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/php/simple_brats"
 OPTIONS_JSON = "#{FIXTURE_DIR}/.bp-config/options.json"

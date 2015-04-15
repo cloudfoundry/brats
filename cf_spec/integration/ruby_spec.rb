@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe 'For all supported Ruby versions' do
   def self.create_test_for(test_name, options={})
