@@ -97,5 +97,11 @@ fi
 
 trap on_close INT
 
-BUNDLE_GEMFILE=cf.Gemfile rspec -f documentation --color cf_spec/integration/"$language"_spec.rb
+BUNDLE_GEMFILE=cf.Gemfile rspec \
+  -f documentation \
+  --require rspec/instafail \
+  -f RSpec::Instafail \
+  --color \
+  cf_spec/integration/"$language"_spec.rb
+
 on_close
