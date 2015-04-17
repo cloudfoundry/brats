@@ -6,6 +6,7 @@ trap 'echo "error in $0 ${BASH_SOURCE} ${LINENO}"' ERR
 stack=lucid64
 should_upload=true
 host=""
+git_branch="master"
 BUILDPACK_WORKSPACE=${BUILDPACK_WORKSPACE:-${HOME}/workspace}
 
 usage() {
@@ -48,6 +49,8 @@ while [ "$#" -gt 0 ]; do
       ;;
     --no-upload)
       should_upload=false;;
+    --branch=*)
+      git_branch=${1#*=};;
     -?*)
       echo "Unrecognized option ($1) submitted"
       usage
@@ -72,7 +75,10 @@ upload_buildpack() {
   mkdir -p tmp/
   git clone https://github.com/cloudfoundry/$name-buildpack tmp/$name-buildpack
 
+  set +e
   pushd tmp/$name-buildpack
+    indent "Checking out branch $git_branch"
+    git checkout $git_branch
     git submodule update --init --recursive
 
     indent "Creating cached buildpack $name"
@@ -83,6 +89,7 @@ upload_buildpack() {
     pattern="*_buildpack-cached*.zip"
     cf create-buildpack $name-brat-buildpack $(ls $pattern | head -n 1) 100 --enable
   popd
+  set -e
 }
 
 on_close() {
@@ -90,11 +97,11 @@ on_close() {
   cf delete-buildpack $language-brat-buildpack -f
 }
 
+trap on_close INT ERR
+
 if [ "$should_upload" == "true" ]; then
   upload_buildpack $language
 fi
-
-trap on_close INT ERR
 
 BUNDLE_GEMFILE=cf.Gemfile rspec \
   -f documentation \
@@ -102,5 +109,4 @@ BUNDLE_GEMFILE=cf.Gemfile rspec \
   -f RSpec::Instafail \
   --color \
   cf_spec/integration/"$language"_spec.rb
-
 on_close
