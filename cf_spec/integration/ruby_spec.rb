@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 describe 'For all supported Ruby versions' do
+  def self.dependencies
+    parsed_manifest(buildpack: 'ruby')
+      .fetch('dependencies')
+  end
+
   def self.create_test_for(test_name, options={})
     options[:engine_version] ||= options[:version]
 
@@ -35,112 +40,43 @@ describe 'For all supported Ruby versions' do
   context 'On lucid64 stack' do
     before { ENV['CF_STACK'] = 'lucid64' }
 
-    create_test_for('Ruby 1.8.7', engine: 'ruby', version: '1.8.7')
-    create_test_for('Ruby 1.9.3', engine: 'ruby', version: '1.9.3')
-    create_test_for('Ruby 2.0.0', engine: 'ruby', version: '2.0.0')
-    create_test_for('Ruby 2.1.0', engine: 'ruby', version: '2.1.0')
-    create_test_for('Ruby 2.1.1', engine: 'ruby', version: '2.1.1')
-    create_test_for('Ruby 2.1.2', engine: 'ruby', version: '2.1.2')
-    create_test_for('Ruby 2.1.3', engine: 'ruby', version: '2.1.3')
-    create_test_for('Ruby 2.1.4', engine: 'ruby', version: '2.1.4')
-    create_test_for('Ruby 2.1.5', engine: 'ruby', version: '2.1.5')
-    create_test_for('Ruby 2.2.0', engine: 'ruby', version: '2.2.0')
-
-    create_test_for('JRuby 1.7.1 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.1', version: '1.8.7')
-    create_test_for('JRuby 1.7.1 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.1', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.2 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.2', version: '1.8.7')
-    create_test_for('JRuby 1.7.2 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.2', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.3 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.3', version: '1.8.7')
-    create_test_for('JRuby 1.7.3 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.3', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.4 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.4', version: '1.8.7')
-    create_test_for('JRuby 1.7.4 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.4', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.5 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.5', version: '1.8.7')
-    create_test_for('JRuby 1.7.5 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.5', version: '1.9.3')
-    create_test_for('JRuby 1.7.5 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.5', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.6 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.6', version: '1.8.7')
-    create_test_for('JRuby 1.7.6 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.6', version: '1.9.3')
-    create_test_for('JRuby 1.7.6 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.6', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.8 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.8', version: '1.8.7')
-    create_test_for('JRuby 1.7.8 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.8', version: '1.9.3')
-    create_test_for('JRuby 1.7.8 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.8', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.9 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.9', version: '1.8.7')
-    create_test_for('JRuby 1.7.9 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.9', version: '1.9.3')
-    create_test_for('JRuby 1.7.9 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.9', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.10 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.10', version: '1.8.7')
-    create_test_for('JRuby 1.7.10 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.10', version: '1.9.3')
-    create_test_for('JRuby 1.7.10 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.10', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.11 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.11', version: '1.8.7')
-    create_test_for('JRuby 1.7.11 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.11', version: '1.9.3')
-    create_test_for('JRuby 1.7.11 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.11', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.19 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.19', version: '1.8.7')
-    create_test_for('JRuby 1.7.19 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.19', version: '1.9.3')
-    create_test_for('JRuby 1.7.19 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.19', version: '2.0.0')
-
-    create_test_for('JRuby 9.0.0.0.pre1 Ruby 2.2.0', engine: 'jruby', engine_version: '9.0.0.0.pre1', version: '2.2.0')
+    dependencies.select do |dependency|
+      dependency['cf_stacks'].include?('lucid64')
+    end.each do |dependency|
+      if dependency['name'] == 'ruby' 
+        version = dependency['version']
+        create_test_for("Ruby #{version}", engine: 'ruby', version: version)  
+      elsif dependency['name'] == 'jruby'
+        match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
+        ruby_version = match_data[1]
+        engine_version = match_data[2]
+        create_test_for("JRuby #{engine_version} Ruby #{ruby_version}",
+                          engine: 'jruby',
+                          engine_version: engine_version,
+                          version: ruby_version)
+      end
+    end
   end
 
   context 'On cflinuxfs2 stack' do
     before { ENV['CF_STACK'] = 'cflinuxfs2' }
 
-    create_test_for('Ruby 1.9.3', engine: 'ruby', version: '1.9.3')
-    create_test_for('Ruby 2.0.0', engine: 'ruby', version: '2.0.0')
-    create_test_for('Ruby 2.1.2', engine: 'ruby', version: '2.1.2')
-    create_test_for('Ruby 2.1.3', engine: 'ruby', version: '2.1.3')
-    create_test_for('Ruby 2.1.4', engine: 'ruby', version: '2.1.4')
-    create_test_for('Ruby 2.1.5', engine: 'ruby', version: '2.1.5')
-    create_test_for('Ruby 2.2.0', engine: 'ruby', version: '2.2.0')
-
-    create_test_for('JRuby 1.7.1 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.1', version: '1.8.7')
-    create_test_for('JRuby 1.7.1 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.1', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.2 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.2', version: '1.8.7')
-    create_test_for('JRuby 1.7.2 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.2', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.3 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.3', version: '1.8.7')
-    create_test_for('JRuby 1.7.3 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.3', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.4 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.4', version: '1.8.7')
-    create_test_for('JRuby 1.7.4 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.4', version: '1.9.3')
-
-    create_test_for('JRuby 1.7.5 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.5', version: '1.8.7')
-    create_test_for('JRuby 1.7.5 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.5', version: '1.9.3')
-    create_test_for('JRuby 1.7.5 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.5', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.6 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.6', version: '1.8.7')
-    create_test_for('JRuby 1.7.6 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.6', version: '1.9.3')
-    create_test_for('JRuby 1.7.6 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.6', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.8 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.8', version: '1.8.7')
-    create_test_for('JRuby 1.7.8 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.8', version: '1.9.3')
-    create_test_for('JRuby 1.7.8 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.8', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.9 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.9', version: '1.8.7')
-    create_test_for('JRuby 1.7.9 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.9', version: '1.9.3')
-    create_test_for('JRuby 1.7.9 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.9', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.10 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.10', version: '1.8.7')
-    create_test_for('JRuby 1.7.10 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.10', version: '1.9.3')
-    create_test_for('JRuby 1.7.10 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.10', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.11 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.11', version: '1.8.7')
-    create_test_for('JRuby 1.7.11 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.11', version: '1.9.3')
-    create_test_for('JRuby 1.7.11 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.11', version: '2.0.0')
-
-    create_test_for('JRuby 1.7.19 Ruby 1.8.7', engine: 'jruby', engine_version: '1.7.19', version: '1.8.7')
-    create_test_for('JRuby 1.7.19 Ruby 1.9.3', engine: 'jruby', engine_version: '1.7.19', version: '1.9.3')
-    create_test_for('JRuby 1.7.19 Ruby 2.0.0', engine: 'jruby', engine_version: '1.7.19', version: '2.0.0')
-
-    create_test_for('JRuby 9.0.0.0.pre1 Ruby 2.2.0', engine: 'jruby', engine_version: '9.0.0.0.pre1', version: '2.2.0')
+    dependencies.select do |dependency|
+      dependency['cf_stacks'].include?('cflinuxfs2')
+    end.each do |dependency|
+      if dependency['name'] == 'ruby' 
+        version = dependency['version']
+        create_test_for("Ruby #{version}", engine: 'ruby', version: version)  
+      elsif dependency['name'] == 'jruby'
+        match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
+        ruby_version = match_data[1]
+        engine_version = match_data[2]
+        create_test_for("JRuby #{engine_version} Ruby #{ruby_version}",
+                          engine: 'jruby',
+                          engine_version: engine_version,
+                          version: ruby_version)
+      end
+    end
   end
 
   def generate_app(app_name, ruby_version, engine, engine_version)
