@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'yaml'
 
 describe 'For all supported Python versions' do
   def self.dependencies
