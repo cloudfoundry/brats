@@ -16,7 +16,9 @@ usage() {
       [--language=LANGUAGE] # REQUIRED - Specifies the set of binaries to be tested.
                             # Possible values: ruby, python, go, nodejs, php
       [--no-upload]         # Specifies whether to upload local buildpack to cf.
-                            # Default: false"
+                            # Default: false
+      [--branch=BRANCH]     # Specifies which git branch of the buildpack to run tests against.
+                            # Default: master"
   exit 1
 }
 
