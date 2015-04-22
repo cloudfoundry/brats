@@ -84,6 +84,7 @@ upload_buildpack() {
     git submodule update --init --recursive
 
     indent "Creating cached buildpack $name"
+    BUNDLE_GEMFILE=cf.Gemfile time bundle install
     BUNDLE_GEMFILE=cf.Gemfile time bundle exec buildpack-packager cached
     indent "Deleting previous buildpack"
     cf delete-buildpack $name-brat-buildpack -f
