@@ -15,6 +15,8 @@ usage() {
   Options:
       [--language=LANGUAGE] # REQUIRED - Specifies the set of binaries to be tested.
                             # Possible values: ruby, python, go, nodejs, php
+      [--host=HOST]         # Specifies the host to target for running tests.
+                            # Example: ci=8.example.com
       [--no-upload]         # Specifies whether to upload local buildpack to cf.
                             # Default: false
       [--branch=BRANCH]     # Specifies which git branch of the buildpack to run tests against.
@@ -24,6 +26,23 @@ usage() {
 
 indent() {
   echo -e "\n******* $1"
+}
+
+configure_stack() {
+  if [ "$host" == "" ]; then
+    host=10.244.0.34.xip.io
+    export VAGRANT_CWD="$HOME/workspace/bosh-lite"
+    $VAGRANT_CWD/bin/add-route
+  fi
+
+  indent "Using the stack '$stack' against the host '$host'"
+}
+
+configure_cf() {
+  indent "Connecting to CF"
+  cf api api.$host --skip-ssl-validation
+  cf_password=${CF_PASSWORD:-"admin"}
+  cf login -u admin -p $cf_password -o pivotal -s integration
 }
 
 configure_ruby_version() {
@@ -49,6 +68,9 @@ while [ "$#" -gt 0 ]; do
         language=${1#*=}
       fi
       ;;
+    --host=*)
+      host=${1#*=}
+      ;;
     --no-upload)
       should_upload=false;;
     --branch=*)
@@ -67,8 +89,8 @@ if [ "$language" == "" ]; then
 fi
 
 configure_ruby_version
-indent "Fetching CF CLI details"
-cf api
+configure_stack
+configure_cf
 
 upload_buildpack() {
   local name=$1
