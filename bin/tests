@@ -6,6 +6,7 @@ trap 'echo "error in $0 ${BASH_SOURCE} ${LINENO}"' ERR
 stack=lucid64
 should_upload=true
 host=""
+version=""
 git_branch="master"
 BUILDPACK_WORKSPACE=${BUILDPACK_WORKSPACE:-${HOME}/workspace}
 
@@ -16,9 +17,11 @@ usage() {
       [--language=LANGUAGE] # REQUIRED - Specifies the set of binaries to be tested.
                             # Possible values: ruby, python, go, nodejs, php
       [--host=HOST]         # Specifies the host to target for running tests.
-                            # Example: ci=8.example.com
+                            # Example: ci-8.example.com
       [--no-upload]         # Specifies whether to upload local buildpack to cf.
                             # Default: false
+      [--version=VERSION]   # Specifies a version of the language to run the BRATs suite of tests against.
+                            # Default: [runs BRATs against all versions]
       [--branch=BRANCH]     # Specifies which git branch of the buildpack to run tests against.
                             # Default: master"
   exit 1
@@ -73,6 +76,8 @@ while [ "$#" -gt 0 ]; do
       ;;
     --no-upload)
       should_upload=false;;
+    --version=*)
+      version=${1#*=};;
     --branch=*)
       git_branch=${1#*=};;
     -?*)
@@ -128,10 +133,16 @@ if [ "$should_upload" == "true" ]; then
   upload_buildpack $language
 fi
 
+version_tag=""
+if [ "$version" != "" ]; then
+  version_tag="--tag version:${version}"
+fi
+
 BUNDLE_GEMFILE=cf.Gemfile rspec \
   -f documentation \
   --require rspec/instafail \
   -f RSpec::Instafail \
   --color \
-  cf_spec/integration/"$language"_spec.rb
+  cf_spec/integration/"$language"_spec.rb \
+  $version_tag
 on_close
