@@ -5,7 +5,7 @@ PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
 
 RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
 
-  context "with node-#{node_version}" do
+  context "with node-#{node_version}", version: node_version do
 
     before :all do
       create_package_json(node_version)

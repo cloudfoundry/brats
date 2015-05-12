@@ -23,7 +23,7 @@ describe 'For all supported Python versions' do
 
       after { Machete::CF::DeleteApp.new.execute(app) }
 
-      specify do
+      it "runs a simple webserver", version: options[:version] do
         generate_app('simple_brats', version)
         assert_correct_version_installed(version)
 

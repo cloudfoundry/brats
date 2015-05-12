@@ -10,7 +10,7 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_ser
   web_server         = web_server_binary['name']
   web_server_version = web_server_binary['version']
 
-  context "with #{php_runtime}-#{runtime_version} and web_server: #{web_server}-#{web_server_version}" do
+  context "with #{php_runtime}-#{runtime_version} and web_server: #{web_server}-#{web_server_version}", version: runtime_version do
 
     before :all do
       create_options_json({

@@ -24,7 +24,7 @@ describe 'For all supported Ruby versions' do
 
       after { Machete::CF::DeleteApp.new.execute(app) }
 
-      specify do
+      it "runs a simple webserver", version: options[:version] do
         generate_app('simple_brats', ruby_version, engine, engine_version)
         assert_ruby_version_installed(ruby_version)
 
