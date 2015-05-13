@@ -6,6 +6,8 @@ trap 'echo "error in $0 ${BASH_SOURCE} ${LINENO}"' ERR
 stack=lucid64
 should_upload=true
 host=""
+org="pivotal"
+space="integration"
 version=""
 git_branch="master"
 BUILDPACK_WORKSPACE=${BUILDPACK_WORKSPACE:-${HOME}/workspace}
@@ -18,6 +20,8 @@ usage() {
                             # Possible values: ruby, python, go, nodejs, php
       [--host=HOST]         # Specifies the host to target for running tests.
                             # Example: ci-8.example.com
+      [--org=ORGANIZATION]  # The CF organization to use for tests
+      [--space=SPACE]       # The CF space to use for tests
       [--no-upload]         # Specifies whether to upload local buildpack to cf.
                             # Default: false
       [--version=VERSION]   # Specifies a version of the language to run the BRATs suite of tests against.
@@ -45,7 +49,7 @@ configure_cf() {
   indent "Connecting to CF"
   cf api api.$host --skip-ssl-validation
   cf_password=${CF_PASSWORD:-"admin"}
-  cf login -u admin -p $cf_password -o pivotal -s integration
+  cf login -u admin -p "${cf_password}" -o "${org}" -s "${space}"
 }
 
 configure_ruby_version() {
@@ -74,6 +78,10 @@ while [ "$#" -gt 0 ]; do
     --host=*)
       host=${1#*=}
       ;;
+    --org=*)
+      org=${1#*=};;
+    --space=*)
+      space=${1#*=};;
     --no-upload)
       should_upload=false;;
     --version=*)
