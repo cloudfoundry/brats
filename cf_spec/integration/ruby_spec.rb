@@ -13,19 +13,21 @@ describe 'For all supported Ruby versions' do
       let(:ruby_version) { options[:version] }
       let(:engine) { options[:engine] }
       let(:engine_version) { options[:engine_version] }
-      let(:app) do
-        Machete.deploy_app(
-          "rubies/tmp/#{ruby_version}/simple_brats", 
+      let(:browser) { Machete::Browser.new(@app) }
+
+      before(:all) do
+        generate_app('simple_brats', options[:version], options[:engine], options[:engine_version])
+
+        @app = Machete.deploy_app(
+          "rubies/tmp/#{options[:version]}/simple_brats",
           name: "simple-ruby-#{Time.now.to_i}",
           buildpack: 'ruby-brat-buildpack'
         )
       end
-      let(:browser) { Machete::Browser.new(app) }
 
-      after { Machete::CF::DeleteApp.new.execute(app) }
+      after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
       it "runs a simple webserver", version: options[:version] do
-        generate_app('simple_brats', ruby_version, engine, engine_version)
         assert_ruby_version_installed(ruby_version)
 
         unless engine == 'ruby'
@@ -33,6 +35,13 @@ describe 'For all supported Ruby versions' do
         end
 
         assert_root_contains('Hello, World')
+      end
+
+      it "parses XML with nokogiri", version: options[:version] do
+        2.times do
+          browser.visit_path('/nokogiri')
+          expect(browser).to have_body('Hello, World')
+        end
       end
     end
   end
@@ -92,13 +101,13 @@ describe 'For all supported Ruby versions' do
   end
 
   def assert_ruby_version_installed(ruby_version)
-    expect(app).to be_running
-    expect(app).to have_logged "Using Ruby version: ruby-#{ruby_version}"
+    expect(@app).to be_running
+    expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}"
   end
 
   def assert_ruby_version_and_engine_installed(ruby_version, engine, engine_version)
-    expect(app).to be_running
-    expect(app).to have_logged "Using Ruby version: ruby-#{ruby_version}-#{engine}-#{engine_version}"
+    expect(@app).to be_running
+    expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}-#{engine}-#{engine_version}"
   end
 
   def assert_root_contains(text)
