@@ -6,3 +6,4 @@ ruby '<%= ruby_version %>', :engine => '<%= engine %>', :engine_version => '<%= 
 gem 'nokogiri'
 gem 'sinatra'
 gem 'eventmachine'
+gem 'bcrypt'

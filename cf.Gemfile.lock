@@ -25,6 +25,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
+    bcrypt (3.1.10)
     coderay (1.1.0)
     diff-lcs (1.2.5)
     httparty (0.13.3)
@@ -64,6 +65,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bcrypt
   buildpack-packager!
   machete!
   pry

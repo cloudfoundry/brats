@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'nokogiri'
 require 'eventmachine'
+require 'bcrypt'
 
 get '/' do
   'Hello, World'
@@ -20,4 +21,8 @@ get '/em' do
     end
   end
   body
+end
+
+get '/bcrypt' do
+  BCrypt::Password.create("Hello, bcrypt")
 end

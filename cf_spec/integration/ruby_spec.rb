@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'bcrypt'
 
 describe 'For all supported Ruby versions' do
   def self.dependencies
@@ -48,6 +49,14 @@ describe 'For all supported Ruby versions' do
         2.times do
           browser.visit_path('/em')
           expect(browser).to have_body('Hello, EventMachine')
+        end
+      end
+
+      it "encrypts with bcrypt", version: options[:version] do
+        2.times do
+          browser.visit_path('/bcrypt')
+          crypted_text = BCrypt::Password.new(browser.body)
+          expect(crypted_text).to eq 'Hello, bcrypt'
         end
       end
     end
