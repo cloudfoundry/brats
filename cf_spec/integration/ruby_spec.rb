@@ -43,6 +43,13 @@ describe 'For all supported Ruby versions' do
           expect(browser).to have_body('Hello, World')
         end
       end
+
+      it "supports EventMachine", version: options[:version] do
+        2.times do
+          browser.visit_path('/em')
+          expect(browser).to have_body('Hello, EventMachine')
+        end
+      end
     end
   end
 
