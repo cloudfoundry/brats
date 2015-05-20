@@ -52,9 +52,9 @@ describe 'For all supported Ruby versions' do
     dependencies.select do |dependency|
       dependency['cf_stacks'].include?('lucid64')
     end.each do |dependency|
-      if dependency['name'] == 'ruby' 
+      if dependency['name'] == 'ruby'
         version = dependency['version']
-        create_test_for("Ruby #{version}", engine: 'ruby', version: version)  
+        create_test_for("Ruby #{version}", engine: 'ruby', version: version)
       elsif dependency['name'] == 'jruby'
         match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
         ruby_version = match_data[1]
@@ -73,9 +73,9 @@ describe 'For all supported Ruby versions' do
     dependencies.select do |dependency|
       dependency['cf_stacks'].include?('cflinuxfs2')
     end.each do |dependency|
-      if dependency['name'] == 'ruby' 
+      if dependency['name'] == 'ruby'
         version = dependency['version']
-        create_test_for("Ruby #{version}", engine: 'ruby', version: version)  
+        create_test_for("Ruby #{version}", engine: 'ruby', version: version)
       elsif dependency['name'] == 'jruby'
         match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
         ruby_version = match_data[1]
