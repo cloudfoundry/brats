@@ -66,6 +66,13 @@ describe 'For all supported Ruby versions' do
           expect(browser).to have_body('00040000')
         end
       end
+
+      it "supports postgres", version: options[:version] do
+        2.times do
+          response = HTTParty.get("http://#{browser.base_url}/pg").chomp
+          expect(response).to include("could not connect to server: No such file or directory")
+        end
+      end
     end
   end
 
