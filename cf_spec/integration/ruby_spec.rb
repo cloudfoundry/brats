@@ -59,6 +59,13 @@ describe 'For all supported Ruby versions' do
           expect(crypted_text).to eq 'Hello, bcrypt'
         end
       end
+
+      it "supports bson", version: options[:version] do
+        2.times do
+          browser.visit_path('/bson')
+          expect(browser).to have_body('00040000')
+        end
+      end
     end
   end
 
