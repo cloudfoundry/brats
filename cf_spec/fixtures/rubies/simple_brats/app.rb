@@ -4,6 +4,7 @@ require 'eventmachine'
 require 'bcrypt'
 require 'bson'
 require 'pg'
+require 'mysql'
 
 get '/' do
   'Hello, World'
@@ -37,6 +38,14 @@ get '/pg' do
   begin
     PG.connect(dbname: 'Test')
   rescue PG::ConnectionBad => e
+    e.message
+  end
+end
+
+get '/mysql' do
+  begin
+    Mysql.new('testing')
+  rescue Mysql::Error => e
     e.message
   end
 end

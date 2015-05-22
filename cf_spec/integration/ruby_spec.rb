@@ -73,6 +73,13 @@ describe 'For all supported Ruby versions' do
           expect(response).to include("could not connect to server: No such file or directory")
         end
       end
+
+      it "supports mysql", version: options[:version] do
+        2.times do
+          response = HTTParty.get("http://#{browser.base_url}/mysql").chomp
+          expect(response).to include("Unknown MySQL server host 'testing'")
+        end
+      end
     end
   end
 
