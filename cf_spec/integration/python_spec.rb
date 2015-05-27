@@ -1,53 +1,59 @@
 require 'spec_helper'
+require 'bcrypt'
 
-describe 'For all supported Python versions' do
-  def self.dependencies
-    parsed_manifest(buildpack: 'python')
-      .fetch('dependencies')
-  end
+RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version|
+  context "with Python version #{python_version}" do
+    let(:browser) { Machete::Browser.new(@app) }
 
-  def self.create_test_for(test_name, options={})
-    options[:engine_version] ||= options[:version]
+    before(:all) do
+      generate_app('simple_brats', python_version)
 
-    context "with #{test_name}" do
-      let(:app_name) { 'python' }
-      let(:version) { options[:version] }
-      let(:app) do
-        Machete.deploy_app(
-          "python/tmp/#{version}/simple_brats",
-          name: "simple-python-#{Time.now.to_i}",
-          buildpack: 'python-brat-buildpack'
-        )
-      end
-      let(:browser) { Machete::Browser.new(app) }
+      @app = Machete.deploy_app(
+        "python/tmp/#{python_version}/simple_brats",
+        name: "simple-python-#{Time.now.to_i}",
+        buildpack: 'python-brat-buildpack',
+        stack: @stack
+      )
+    end
 
-      after { Machete::CF::DeleteApp.new.execute(app) }
+    after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
-      it "runs a simple webserver", version: options[:version] do
-        generate_app('simple_brats', version)
-        assert_correct_version_installed(version)
+    it "runs a simple webserver", version: python_version do
+      expect(@app).to be_running
+      expect(@app).to have_logged "Installing runtime (python-#{python_version})"
 
-        assert_root_contains('Hello, World')
+      2.times do
+        browser.visit_path('/')
+        expect(browser).to have_body('Hello, World')
       end
     end
-  end
 
-  context 'On lucid64 stack' do
-    before { ENV['CF_STACK'] = 'lucid64' }
-
-    dependencies.each do |dependency|
-      if dependency['name'] == 'python' && dependency['cf_stacks'].include?('lucid64')
-        create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+    it 'encrypts with bcrypt', version: python_version do
+      2.times do
+        browser.visit_path('/bcrypt')
+        crypted_text = BCrypt::Password.new(browser.body)
+        expect(crypted_text).to eq 'Hello, bcrypt'
       end
     end
-  end
 
-  context 'On cflinuxfs2 stack' do
-    before { ENV['CF_STACK'] = 'cflinuxfs2' }
+    it 'supports postgres by raising a no connection error', version: python_version do
+      2.times do
+        browser.visit_path '/pg'
+        expect(browser).to have_body 'could not connect to server: No such file or directory'
+      end
+    end
 
-    dependencies.each do |dependency|
-      if dependency['name'] == 'python' && dependency['cf_stacks'].include?('cflinuxfs2')
-        create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+    it 'supports mysql by raising a no connection error', version: python_version do
+      2.times do
+        browser.visit_path '/mysql'
+        expect(browser).to have_body "Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock'"
+      end
+    end
+
+    it 'supports loading and running the hiredis lib', version: python_version do
+      2.times do
+        browser.visit_path('/redis')
+        expect(browser).to have_body 'Hello'
       end
     end
   end
@@ -64,23 +70,27 @@ describe 'For all supported Python versions' do
     end
   end
 
-  def assert_correct_version_installed(version)
-    expect(app).to be_running
-    expect(app).to have_logged "Installing runtime (python-#{version})"
-  end
-
-
-  def assert_root_contains(text)
-    2.times do
-      browser.visit_path('/')
-      expect(browser).to have_body(text)
-    end
-  end
-
   def evaluate_erb(file_path, our_binding)
     template = File.read(file_path)
     f = File.open(file_path, 'w')
     f << ERB.new(template).result(our_binding)
     f.close
+  end
+end
+
+describe 'For all supported Python versions' do
+  def self.dependencies
+    parsed_manifest(buildpack: 'python')
+      .fetch('dependencies')
+  end
+
+  ['lucid64', 'cflinuxfs2'].each do |stack|
+    context "on the #{stack} stack" do
+      before(:all) { @stack = stack }
+
+      dependencies.select{|d| d['name'] == 'python' && d['cf_stacks'].include?(stack)}.each do |dependency|
+        it_behaves_like :a_deploy_of_python_app_to_cf, dependency['version']
+      end
+    end
   end
 end
