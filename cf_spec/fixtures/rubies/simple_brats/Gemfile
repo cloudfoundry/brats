@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-# ruby=<%= engine %>-<%=engine_version%>
 ruby '<%= ruby_version %>', :engine => '<%= engine %>', :engine_version => '<%= engine_version %>'
 
 gem 'nokogiri'
@@ -8,5 +7,13 @@ gem 'sinatra'
 gem 'eventmachine'
 gem 'bcrypt'
 gem 'bson'
-gem 'pg'
-gem 'mysql'
+
+platform :ruby do
+  gem 'mysql'
+  gem 'pg'
+end
+
+platform :jruby do
+  gem 'jdbc-mysql'
+  gem 'jdbc-postgres'
+end

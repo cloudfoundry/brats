@@ -69,15 +69,25 @@ describe 'For all supported Ruby versions' do
 
       it "supports postgres", version: options[:version] do
         2.times do
-          response = HTTParty.get("http://#{browser.base_url}/pg").chomp
-          expect(response).to include("could not connect to server: No such file or directory")
+          browser.visit_path('/pg')
+
+          if engine == 'ruby'
+            expect(browser).to have_body('could not connect to server: No such file or directory')
+          else
+            expect(browser).to have_body('The connection attempt failed.')
+          end
         end
       end
 
       it "supports mysql", version: options[:version] do
         2.times do
-          response = HTTParty.get("http://#{browser.base_url}/mysql").chomp
-          expect(response).to include("Unknown MySQL server host 'testing'")
+          browser.visit_path('/mysql')
+
+          if engine == 'ruby'
+            expect(browser).to have_body("Unknown MySQL server host 'testing'")
+          else
+            expect(browser).to have_body("Communications link failure")
+          end
         end
       end
     end

@@ -3,8 +3,6 @@ require 'nokogiri'
 require 'eventmachine'
 require 'bcrypt'
 require 'bson'
-require 'pg'
-require 'mysql'
 
 get '/' do
   'Hello, World'
@@ -34,18 +32,47 @@ get '/bson' do
   1024.to_bson.unpack('H*').first
 end
 
-get '/pg' do
-  begin
-    PG.connect(dbname: 'Test')
-  rescue PG::ConnectionBad => e
-    e.message
-  end
-end
+if RUBY_PLATFORM == 'java'
+  require 'jdbc/mysql'
+  require 'jdbc/postgres'
 
-get '/mysql' do
-  begin
-    Mysql.new('testing')
-  rescue Mysql::Error => e
-    e.message
+  Jdbc::MySQL.load_driver
+  Jdbc::Postgres.load_driver
+
+  get '/pg' do
+    begin
+      userurl = 'jdbc:postgresql://HOST/DATABASE'
+      java.sql.DriverManager.get_connection(userurl, 'USERNAME', 'PASSWORD')
+    rescue => e
+      e.message
+    end
+  end
+
+  get '/mysql' do
+    begin
+      userurl = 'jdbc:mysql://HOST/DATABASE'
+      java.sql.DriverManager.get_connection(userurl, 'USERNAME', 'PASSWORD')
+    rescue => e
+      e.message
+    end
+  end
+else
+  require 'mysql'
+  require 'pg'
+
+  get '/pg' do
+    begin
+      PG.connect(dbname: 'Test')
+    rescue PG::ConnectionBad => e
+      e.message
+    end
+  end
+
+  get '/mysql' do
+    begin
+      Mysql.new('testing')
+    rescue Mysql::Error => e
+      e.message
+    end
   end
 end
