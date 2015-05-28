@@ -3,13 +3,13 @@
 set -eo pipefail
 trap 'echo "error in $0 ${BASH_SOURCE} ${LINENO}"' ERR
 
-stack=lucid64
 should_upload=true
 host=""
 org="pivotal"
 space="integration"
 version=""
 git_branch="master"
+stack=""
 BUILDPACK_WORKSPACE=${BUILDPACK_WORKSPACE:-${HOME}/workspace}
 
 usage() {
@@ -27,7 +27,9 @@ usage() {
       [--version=VERSION]   # Specifies a version of the language to run the BRATs suite of tests against.
                             # Default: [runs BRATs against all versions]
       [--branch=BRANCH]     # Specifies which git branch of the buildpack to run tests against.
-                            # Default: master"
+                            # Default: master
+      [--stack=STACK]       # Specifies which stack to run tests against.
+                            # Default: all"
   exit 1
 }
 
@@ -42,7 +44,11 @@ configure_stack() {
     $VAGRANT_CWD/bin/add-route
   fi
 
-  indent "Using the stack '$stack' against the host '$host'"
+  if [ "$stack" == "" ]; then
+    indent "Using the host '$host'"
+  else
+    indent "Using the stack '$stack' against the host '$host'"
+  fi
 }
 
 configure_cf() {
@@ -50,16 +56,6 @@ configure_cf() {
   cf api api.$host --skip-ssl-validation
   cf_password=${CF_PASSWORD:-"admin"}
   cf login -u admin -p "${cf_password}" -o "${org}" -s "${space}"
-}
-
-configure_ruby_version() {
-  if [ -d $HOME/.rvm/bin ] ; then
-    indent "Configuring RVM"
-    export PATH=$HOME/.rvm/bin:$PATH
-    rvm use 2.1.5
-  else
-    indent "Using default ruby"
-  fi
 }
 
 while [ "$#" -gt 0 ]; do
@@ -88,6 +84,8 @@ while [ "$#" -gt 0 ]; do
       version=${1#*=};;
     --branch=*)
       git_branch=${1#*=};;
+    --stack=*)
+      stack=${1#*=};;
     -?*)
       echo "Unrecognized option ($1) submitted"
       usage
@@ -101,7 +99,6 @@ if [ "$language" == "" ]; then
   usage
 fi
 
-configure_ruby_version
 configure_stack
 configure_cf
 
@@ -146,11 +143,17 @@ if [ "$version" != "" ]; then
   version_tag="--tag version:${version}"
 fi
 
-BUNDLE_GEMFILE=cf.Gemfile rspec \
+stack_tag=""
+if [ "$stack" != "" ]; then
+  stack_tag="--tag stack:${stack}"
+fi
+
+rspec \
   -f documentation \
   --require rspec/instafail \
   -f RSpec::Instafail \
   --color \
   cf_spec/integration/"$language"_spec.rb \
-  $version_tag
+  $version_tag \
+  $stack_tag
 on_close

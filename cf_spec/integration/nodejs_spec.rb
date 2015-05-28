@@ -3,7 +3,7 @@ require 'spec_helper'
 FIXTURE_DIR  = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
 PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
 
-RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
+RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
 
   context "with node-#{node_version}", version: node_version do
 
@@ -12,7 +12,8 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version|
       @app = Machete.deploy_app(
         'nodejs/simple_brats',
         name: "simple-nodejs-#{Time.now.to_i}",
-        buildpack: 'nodejs-brat-buildpack'
+        buildpack: 'nodejs-brat-buildpack',
+        stack: stack
       )
       @browser = Machete::Browser.new(@app)
     end
@@ -44,17 +45,13 @@ describe 'Deploying CF apps' do
   end
 
   ['lucid64', 'cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack" do
-
-      before :all do
-        ENV['CF_STACK'] = stack
-      end
+    context "on the #{stack} stack", stack: stack do
 
       nodes.select { |node|
         node['cf_stacks'].include?(stack)
       }.each do |node|
 
-        it_behaves_like :a_deploy_of_nodejs_app_to_cf, node['version']
+        it_behaves_like :a_deploy_of_nodejs_app_to_cf, node['version'], stack
       end
     end
   end

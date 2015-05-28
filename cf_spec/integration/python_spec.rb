@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'bcrypt'
 
-RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version|
+RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   context "with Python version #{python_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
@@ -12,7 +12,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version|
         "python/tmp/#{python_version}/simple_brats",
         name: "simple-python-#{Time.now.to_i}",
         buildpack: 'python-brat-buildpack',
-        stack: @stack
+        stack: stack
       )
     end
 
@@ -85,11 +85,9 @@ describe 'For all supported Python versions' do
   end
 
   ['lucid64', 'cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack" do
-      before(:all) { @stack = stack }
-
+    context "on the #{stack} stack", stack: stack do
       dependencies.select{|d| d['name'] == 'python' && d['cf_stacks'].include?(stack)}.each do |dependency|
-        it_behaves_like :a_deploy_of_python_app_to_cf, dependency['version']
+        it_behaves_like :a_deploy_of_python_app_to_cf, dependency['version'], stack
       end
     end
   end

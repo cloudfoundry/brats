@@ -3,7 +3,7 @@ require 'spec_helper'
 FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/php/simple_brats"
 OPTIONS_JSON = "#{FIXTURE_DIR}/.bp-config/options.json"
 
-RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_server_binary|
+RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_server_binary, stack|
 
   php_runtime        = php_runtime_binary['name']
   runtime_version    = php_runtime_binary['version']
@@ -22,7 +22,8 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_ser
       @app = Machete.deploy_app(
         'php/simple_brats',
         name: "simple-php-#{Time.now.to_i}",
-        buildpack: 'php-brat-buildpack'
+        buildpack: 'php-brat-buildpack',
+        stack: stack
       )
       @browser = Machete::Browser.new(@app)
     end
@@ -59,11 +60,7 @@ describe 'Deploying CF apps' do
   web_servers        = dependencies.select {|binary| valid_web_servers.include?(binary['name']) }
 
   ['lucid64', 'cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack" do
-
-      before :all do
-        ENV['CF_STACK'] = stack
-      end
+    context "on the #{stack} stack", stack: stack do
 
       php_runtimes.select { |php_runtime|
         php_runtime['cf_stacks'].include?(stack)
@@ -73,7 +70,7 @@ describe 'Deploying CF apps' do
           web_server['cf_stacks'].include?(stack)
         }.each do |web_server|
 
-          it_behaves_like :a_deploy_of_php_app_to_cf, php_runtime, web_server
+          it_behaves_like :a_deploy_of_php_app_to_cf, php_runtime, web_server, stack
         end
       end
     end

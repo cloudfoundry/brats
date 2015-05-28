@@ -14,7 +14,8 @@ describe 'For all supported Go versions' do
         Machete.deploy_app(
           "go/tmp/#{version}/src/simple_brats",
           name: "simple-go-#{Time.now.to_i}",
-          buildpack: 'go-brat-buildpack'
+          buildpack: 'go-brat-buildpack',
+          stack: stack
         )
       end
       let(:browser) { Machete::Browser.new(app) }
@@ -30,16 +31,16 @@ describe 'For all supported Go versions' do
     end
   end
 
-  context 'On lucid64 stack' do
-    before { ENV['CF_STACK'] = 'lucid64' }
+  context 'On lucid64 stack', stack: 'lucid64' do
+    let(:stack) { 'lucid64' }
 
     dependencies.each do |dependency|
       create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
     end
   end
 
-  context 'On cflinuxfs2 stack' do
-    before { ENV['CF_STACK'] = 'cflinuxfs2' }
+  context 'On cflinuxfs2 stack', stack: 'cflinuxfs2' do
+    let(:stack) { 'cflinuxfs2' }
 
     dependencies.each do |dependency|
       create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
