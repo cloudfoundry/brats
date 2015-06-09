@@ -25,20 +25,23 @@ describe 'For all supported Ruby versions' do
         @app = Machete.deploy_app(
           "rubies/tmp/#{options[:version]}/simple_brats",
           name: "simple-ruby-#{Time.now.to_i}",
-          buildpack: 'ruby-brat-buildpack'
+          buildpack: 'ruby-brat-buildpack',
+          stack: @stack
         )
       end
 
       after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
+      it "installs the correct version of Ruby", version: options[:version] do
+        expect(@app).to be_running
+        expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}"
+      end
+
       it "runs a simple webserver", version: options[:version] do
-        assert_ruby_version_installed(ruby_version)
-
-        unless engine == 'ruby'
-          assert_ruby_version_and_engine_installed(ruby_version, engine, engine_version)
+        2.times do
+          browser.visit_path('/')
+          expect(browser).to have_body('Hello, World')
         end
-
-        assert_root_contains('Hello, World')
       end
 
       it "parses XML with nokogiri", version: options[:version] do
@@ -74,11 +77,7 @@ describe 'For all supported Ruby versions' do
         2.times do
           browser.visit_path('/pg')
 
-          if engine == 'ruby'
-            expect(browser).to have_body('could not connect to server: No such file or directory')
-          else
-            expect(browser).to have_body('The connection attempt failed.')
-          end
+          expect(browser).to have_body('could not connect to server: No such file or directory')
         end
       end
 
@@ -86,11 +85,7 @@ describe 'For all supported Ruby versions' do
         2.times do
           browser.visit_path('/mysql')
 
-          if engine == 'ruby'
-            expect(browser).to have_body("Unknown MySQL server host 'testing'")
-          else
-            expect(browser).to have_body("Communications link failure")
-          end
+          expect(browser).to have_body("Unknown MySQL server host 'testing'")
         end
       end
     end
@@ -105,14 +100,6 @@ describe 'For all supported Ruby versions' do
       if dependency['name'] == 'ruby'
         version = dependency['version']
         create_test_for("Ruby #{version}", engine: 'ruby', version: version)
-      elsif dependency['name'] == 'jruby'
-        match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
-        ruby_version = match_data[1]
-        engine_version = match_data[2]
-        create_test_for("JRuby #{engine_version} Ruby #{ruby_version}",
-                          engine: 'jruby',
-                          engine_version: engine_version,
-                          version: ruby_version)
       end
     end
   end
@@ -126,14 +113,6 @@ describe 'For all supported Ruby versions' do
       if dependency['name'] == 'ruby'
         version = dependency['version']
         create_test_for("Ruby #{version}", engine: 'ruby', version: version)
-      elsif dependency['name'] == 'jruby'
-        match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
-        ruby_version = match_data[1]
-        engine_version = match_data[2]
-        create_test_for("JRuby #{engine_version} Ruby #{ruby_version}",
-                          engine: 'jruby',
-                          engine_version: engine_version,
-                          version: ruby_version)
       end
     end
   end
@@ -147,23 +126,6 @@ describe 'For all supported Ruby versions' do
 
     ['Gemfile', '.jrubyrc', 'Gemfile.lock'].each do |file|
       evaluate_erb(File.join(copied_template_path, file), binding)
-    end
-  end
-
-  def assert_ruby_version_installed(ruby_version)
-    expect(@app).to be_running
-    expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}"
-  end
-
-  def assert_ruby_version_and_engine_installed(ruby_version, engine, engine_version)
-    expect(@app).to be_running
-    expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}-#{engine}-#{engine_version}"
-  end
-
-  def assert_root_contains(text)
-    2.times do
-      browser.visit_path('/')
-      expect(browser).to have_body(text)
     end
   end
 
