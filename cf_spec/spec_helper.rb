@@ -18,15 +18,17 @@ end
 
 def install_buildpack(buildpack:, branch: BRATS_BRANCH)
   FileUtils.mkdir_p('tmp')
-  ` set -e
-    git clone -q -b #{branch} --depth 1 --recursive https://github.com/cloudfoundry/#{buildpack}-buildpack tmp/#{buildpack}-buildpack
-    cd tmp/#{buildpack}-buildpack
-    export BUNDLE_GEMFILE=cf.Gemfile
-    bundle install
-    bundle exec buildpack-packager cached
-    cf delete-buildpack #{buildpack}-brat-buildpack -f
-    cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) 100 --enable
-  `
+  Bundler.with_clean_env do
+    ` set -e
+      git clone -q -b #{branch} --depth 1 --recursive https://github.com/cloudfoundry/#{buildpack}-buildpack tmp/#{buildpack}-buildpack
+      cd tmp/#{buildpack}-buildpack
+      export BUNDLE_GEMFILE=cf.Gemfile
+      bundle install
+      bundle exec buildpack-packager cached
+      cf delete-buildpack #{buildpack}-brat-buildpack -f
+      cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) 100 --enable
+    `
+  end
 end
 
 
