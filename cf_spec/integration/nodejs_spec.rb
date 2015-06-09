@@ -26,6 +26,14 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
       end
     end
 
+    it 'supports bcrypt' do
+      expect(@app).to be_running
+      2.times do
+        @browser.visit_path('/bcrypt')
+        expect(@browser).to have_body('Hello Bcrypt!')
+      end
+    end
+
     it 'should have the correct version' do
       expect(@app).to have_logged("Downloading and installing node #{node_version}")
     end
@@ -66,6 +74,9 @@ def create_package_json(node_engine)
     'main' => 'server.js',
     'engines' => {
       'node' => node_engine
+    },
+    'dependencies' => {
+      'bcrypt' => '0.8.3'
     }
   }
 
