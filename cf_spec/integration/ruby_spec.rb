@@ -2,6 +2,9 @@ require 'spec_helper'
 require 'bcrypt'
 
 describe 'For all supported Ruby versions' do
+  before(:all) { install_buildpack(buildpack: 'ruby') }
+  after(:all) { cleanup_buildpack(buildpack: 'ruby') }
+
   def self.dependencies
     parsed_manifest(buildpack: 'ruby')
       .fetch('dependencies')

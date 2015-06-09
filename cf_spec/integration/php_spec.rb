@@ -49,6 +49,9 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_runtime_binary, web_ser
 end
 
 describe 'Deploying CF apps' do
+  before(:all) { install_buildpack(buildpack: 'php') }
+  after(:all) { cleanup_buildpack(buildpack: 'php') }
+
   def self.dependencies
     parsed_manifest(buildpack: 'php')
       .fetch('dependencies')

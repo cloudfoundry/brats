@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe 'For all supported Go versions' do
+  before(:all) { install_buildpack(buildpack: 'go') }
+  after(:all) { cleanup_buildpack(buildpack: 'go') }
+
   def self.dependencies
     parsed_manifest(buildpack: 'go').fetch('dependencies')
   end

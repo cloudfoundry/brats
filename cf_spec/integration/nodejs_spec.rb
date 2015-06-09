@@ -55,6 +55,9 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
 end
 
 describe 'Deploying CF apps' do
+  before(:all) { install_buildpack(buildpack: 'nodejs') }
+  after(:all) { cleanup_buildpack(buildpack: 'nodejs') }
+
   def self.nodes
     parsed_manifest(buildpack: 'nodejs')
       .fetch('dependencies')
