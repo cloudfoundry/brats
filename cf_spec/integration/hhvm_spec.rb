@@ -3,12 +3,12 @@ require 'spec_helper'
 FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/php/simple_brats"
 OPTIONS_JSON = "#{FIXTURE_DIR}/.bp-config/options.json"
 
-RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server_binary, stack|
+RSpec.shared_examples :a_deploy_of_hhvm_app_to_cf do |runtime_version, web_server_binary, stack|
 
   web_server         = web_server_binary['name']
   web_server_version = web_server_binary['version']
 
-  context "with php-#{runtime_version} and web_server: #{web_server}-#{web_server_version}", version: runtime_version do
+  context "with hhvm-#{runtime_version} and web_server: #{web_server}-#{web_server_version}", version: runtime_version do
 
     before :all do
       create_options_json({
@@ -34,8 +34,8 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
     end
 
     it 'should have the correct version' do
-      expect(@app).to have_logged("Installing PHP")
-      expect(@app).to have_logged("PHP #{runtime_version}")
+      expect(@app).to have_logged("Installing HHVM")
+      expect(@app).to have_logged("HHVM #{runtime_version}")
     end
 
     after :all do
@@ -54,7 +54,7 @@ describe 'Deploying CF apps' do
       .fetch('dependencies')
   end
 
-  php_runtimes       = dependencies.select {|binary| binary['name'] == 'php' }
+  hhvm_runtimes      = dependencies.select {|binary| binary['name'] == 'hhvm' }
 
   valid_web_servers  = ['httpd', 'nginx']
   web_servers        = dependencies.select {|binary| valid_web_servers.include?(binary['name']) }
@@ -62,15 +62,15 @@ describe 'Deploying CF apps' do
   ['lucid64', 'cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
 
-      php_runtimes.select { |php_runtime|
-        php_runtime['cf_stacks'].include?(stack)
-      }.each do |php_runtime|
+      hhvm_runtimes.select { |hhvm_runtime|
+        hhvm_runtime['cf_stacks'].include?(stack)
+      }.each do |hhvm_runtime|
 
         web_servers.select {|web_server|
           web_server['cf_stacks'].include?(stack)
         }.each do |web_server|
 
-          it_behaves_like :a_deploy_of_php_app_to_cf, php_runtime['version'], web_server, stack
+          it_behaves_like :a_deploy_of_hhvm_app_to_cf, hhvm_runtime['version'], web_server, stack
         end
       end
     end
@@ -83,8 +83,8 @@ def create_options_json(options = {})
   web_server_version = options[:web_server_version]
 
   options = {
-    'PHP_VM' => 'php',
-    "PHP_VERSION" => runtime_version,
+    'PHP_VM' => 'hhvm',
+    "HHVM_VERSION" => runtime_version,
     'WEB_SERVER' => web_server,
     "#{web_server.upcase}_VERSION" => web_server_version
   }
