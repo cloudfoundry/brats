@@ -16,22 +16,6 @@ http.createServer(function (req, res) {
       res.writeHead(200, {'Content-Type': 'text/plain'});
       res.end('Hello World!');
       break;
-    case '/bson-ext':
-      var bson = require('bson-ext');
-      var doc = {
-        a: 1,
-        b: {
-          d: 1
-        }
-      };
-
-      // Serialize a document
-      var data = doc.b.toBSON;
-      console.log("data: ", data);
-
-      res.writeHead(200, {'Content-Type': 'text/plain'});
-      res.end('Hello Bson-ext!');
-      break;
     default:
       res.writeHead(404, {'Content-Type': 'text/plain'});
       res.end('no input url');
