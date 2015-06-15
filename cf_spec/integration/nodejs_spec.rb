@@ -34,7 +34,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
       end
     end
 
-    it 'supports bson-ext' do
+    it 'supports bson-ext', if: Gem::Version.new(node_version) >= Gem::Version.new('0.10') do
       expect(@app).to be_running
       2.times do
         @browser.visit_path('/bson-ext')
