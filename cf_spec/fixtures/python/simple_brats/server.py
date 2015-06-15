@@ -18,7 +18,7 @@ def hello():
 
 @app.route("/bcrypt")
 def test_bcrypt():
-    return bcrypt.hashpw("Hello, bcrypt".encode('utf-8'), bcrypt.gensalt())
+    return bcrypt.hashpw("Hello, bcrypt".encode('utf-8'), bcrypt.gensalt(prefix=b"2a"))
 
 
 @app.route("/mysql")
