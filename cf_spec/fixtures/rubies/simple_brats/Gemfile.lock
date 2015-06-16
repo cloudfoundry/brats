@@ -18,6 +18,7 @@ GEM
     rack (1.6.1)
     rack-protection (1.5.3)
       rack
+    rmagick (2.15.2)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -36,4 +37,8 @@ DEPENDENCIES
   mysql
   nokogiri
   pg
+  rmagick
   sinatra
+
+BUNDLED WITH
+   1.10.0

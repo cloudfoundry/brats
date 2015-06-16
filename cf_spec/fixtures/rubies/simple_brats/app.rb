@@ -75,4 +75,12 @@ else
       e.message
     end
   end
+
+  require 'rmagick'
+
+  get '/rmagick' do
+    # Image from https://upload.wikimedia.org/wikipedia/commons/5/54/%28View_of_Troldhaugen_and_Nord%C3%A5svannet%29_%284007745063%29.jpg
+    image = Magick::Image.read(open('image.jpg')).first
+    "width #{image.columns} height #{image.rows}"
+  end
 end

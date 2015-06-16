@@ -11,6 +11,7 @@ gem 'bson'
 platform :ruby do
   gem 'mysql'
   gem 'pg'
+  gem 'rmagick' unless `which convert` == ''
 end
 
 platform :jruby do

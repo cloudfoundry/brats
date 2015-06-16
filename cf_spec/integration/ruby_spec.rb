@@ -88,6 +88,20 @@ describe 'For all supported Ruby versions' do
           expect(browser).to have_body("Unknown MySQL server host 'testing'")
         end
       end
+
+
+      it "supports rmagick", version: options[:version] do
+        if ENV['CF_RELEASE'] == '207'
+          skip('RMagick is not ready for a Cloud Foundry older than v208')
+        end
+
+        2.times do
+          browser.visit_path("/rmagick")
+
+          expect(browser).to have_body("width 1484")
+          expect(browser).to have_body("height 1066")
+        end
+      end
     end
   end
 
