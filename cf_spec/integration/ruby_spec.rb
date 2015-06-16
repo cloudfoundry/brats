@@ -92,7 +92,7 @@ describe 'For all supported Ruby versions' do
   end
 
   context 'On cflinuxfs2 stack', stack: 'cflinuxfs2' do
-    before { ENV['CF_STACK'] = 'cflinuxfs2' }
+    before { @stack = 'cflinuxfs2' }
 
     dependencies.select do |dependency|
       dependency['cf_stacks'].include?('cflinuxfs2')
