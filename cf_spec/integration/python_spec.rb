@@ -87,7 +87,7 @@ describe 'For all supported Python versions' do
       .fetch('dependencies')
   end
 
-  ['lucid64', 'cflinuxfs2'].each do |stack|
+  ['cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
       dependencies.select{|d| d['name'] == 'python' && d['cf_stacks'].include?(stack)}.each do |dependency|
         it_behaves_like :a_deploy_of_python_app_to_cf, dependency['version'], stack

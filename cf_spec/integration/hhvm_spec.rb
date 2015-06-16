@@ -59,7 +59,7 @@ describe 'Deploying CF apps' do
   valid_web_servers  = ['httpd', 'nginx']
   web_servers        = dependencies.select {|binary| valid_web_servers.include?(binary['name']) }
 
-  ['lucid64', 'cflinuxfs2'].each do |stack|
+  ['cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
 
       hhvm_runtimes.select { |hhvm_runtime|

@@ -91,19 +91,6 @@ describe 'For all supported Ruby versions' do
     end
   end
 
-  context 'On lucid64 stack', stack: 'lucid64' do
-    before { ENV['CF_STACK'] = 'lucid64' }
-
-    dependencies.select do |dependency|
-      dependency['cf_stacks'].include?('lucid64')
-    end.each do |dependency|
-      if dependency['name'] == 'ruby'
-        version = dependency['version']
-        create_test_for("Ruby #{version}", engine: 'ruby', version: version)
-      end
-    end
-  end
-
   context 'On cflinuxfs2 stack', stack: 'cflinuxfs2' do
     before { ENV['CF_STACK'] = 'cflinuxfs2' }
 

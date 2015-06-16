@@ -105,7 +105,7 @@ describe 'For all supported JRuby versions' do
       .fetch('dependencies')
   end
 
-  ['lucid64', 'cflinuxfs2'].each do |stack|
+  ['cflinuxfs2'].each do |stack|
     context "On #{stack} stack", stack: stack do
       dependencies.select do |dependency|
         dependency['cf_stacks'].include?(stack)

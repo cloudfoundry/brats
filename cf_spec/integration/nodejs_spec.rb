@@ -64,7 +64,7 @@ describe 'Deploying CF apps' do
       .select{|d| d['name'] == 'node'}
   end
 
-  ['lucid64', 'cflinuxfs2'].each do |stack|
+  ['cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
 
       nodes.select { |node|

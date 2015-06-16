@@ -34,14 +34,6 @@ describe 'For all supported Go versions' do
     end
   end
 
-  context 'On lucid64 stack', stack: 'lucid64' do
-    let(:stack) { 'lucid64' }
-
-    dependencies.each do |dependency|
-      create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
-    end
-  end
-
   context 'On cflinuxfs2 stack', stack: 'cflinuxfs2' do
     let(:stack) { 'cflinuxfs2' }
 
