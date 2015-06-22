@@ -9,7 +9,7 @@ RSpec.shared_examples :a_deploy_of_jruby_app_to_cf do |ruby_version, jruby_versi
       generate_app('simple_brats', ruby_version, 'jruby', jruby_version)
 
       @app = Machete.deploy_app(
-        "rubies/tmp/#{ruby_version}/simple_brats",
+        "jruby/tmp/#{ruby_version}/simple_brats",
         name: "simple-jruby-#{Time.now.to_i}",
         buildpack: 'ruby-brat-buildpack',
         stack: stack
@@ -77,13 +77,13 @@ RSpec.shared_examples :a_deploy_of_jruby_app_to_cf do |ruby_version, jruby_versi
   end
 
   def generate_app(app_name, ruby_version, engine, engine_version)
-    origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'rubies', app_name)
-    copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'rubies', 'tmp', ruby_version, app_name)
+    origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'jruby', app_name)
+    copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'jruby', 'tmp', ruby_version, app_name)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)
 
-    ['Gemfile', '.jrubyrc', 'Gemfile.lock'].each do |file|
+    ['Gemfile', '.jrubyrc'].each do |file|
       evaluate_erb(File.join(copied_template_path, file), binding)
     end
   end
