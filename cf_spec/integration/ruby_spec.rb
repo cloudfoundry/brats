@@ -13,7 +13,7 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
         "ruby/tmp/#{ruby_version}/simple_brats",
         name: "simple-jruby-#{Time.now.to_i}",
         buildpack: 'ruby-brat-buildpack',
-        stack: @stack
+        stack: stack
       )
     end
 
