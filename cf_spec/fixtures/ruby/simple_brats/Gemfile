@@ -9,5 +9,4 @@ gem 'bcrypt'
 gem 'bson'
 gem 'mysql'
 gem 'pg'
-gem 'rmagick' unless `which convert` == ''
 

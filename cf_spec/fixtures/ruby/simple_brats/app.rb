@@ -4,7 +4,6 @@ require 'eventmachine'
 require 'mysql'
 require 'nokogiri'
 require 'pg'
-require 'rmagick'
 require 'sinatra'
 
 get '/' do
@@ -49,10 +48,4 @@ get '/mysql' do
   rescue Mysql::Error => e
     e.message
   end
-end
-
-get '/rmagick' do
-  # Image from https://upload.wikimedia.org/wikipedia/commons/5/54/%28View_of_Troldhaugen_and_Nord%C3%A5svannet%29_%284007745063%29.jpg
-  image = Magick::Image.read(open('image.jpg')).first
-  "width #{image.columns} height #{image.rows}"
 end

@@ -75,15 +75,6 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
         expect(browser).to have_body("Unknown MySQL server host 'testing'")
       end
     end
-
-    it "supports rmagick" do
-      2.times do
-        browser.visit_path("/rmagick")
-
-        expect(browser).to have_body("width 1484")
-        expect(browser).to have_body("height 1066")
-      end
-    end
   end
 end
 
