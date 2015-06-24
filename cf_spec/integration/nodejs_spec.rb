@@ -34,7 +34,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
       end
     end
 
-    it 'supports bson-ext', if: Gem::Version.new(node_version) >= Gem::Version.new('0.10') do
+    it 'supports bson-ext' do
       expect(@app).to be_running
       2.times do
         @browser.visit_path('/bson-ext')
@@ -68,7 +68,8 @@ describe 'Deploying CF apps' do
     context "on the #{stack} stack", stack: stack do
 
       nodes.select { |node|
-        node['cf_stacks'].include?(stack)
+        node['cf_stacks'].include?(stack) &&
+          Gem::Version.new(node['version']) >= Gem::Version.new('0.10')
       }.each do |node|
 
         it_behaves_like :a_deploy_of_nodejs_app_to_cf, node['version'], stack
