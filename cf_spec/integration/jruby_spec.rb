@@ -111,7 +111,7 @@ describe 'For all supported JRuby versions' do
         dependency['cf_stacks'].include?(stack)
       end.each do |dependency|
         if dependency['name'] == 'jruby'
-          match_data = dependency['version'].match(/ruby-(\d+\.\d+\.\d+)-jruby-(\d+\.\d+\.\d+(?:\.\d\.pre\d)?)/)
+          match_data = dependency['version'].match(/ruby-(.*)-jruby-(.*)/)
           ruby_version = match_data[1]
           jruby_version = match_data[2]
           it_behaves_like :a_deploy_of_jruby_app_to_cf, ruby_version, jruby_version, stack
