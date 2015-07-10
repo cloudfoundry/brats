@@ -19,15 +19,19 @@ end
 def install_buildpack(buildpack:, branch: BRATS_BRANCH)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
-    ` set -e
-      git clone -q -b #{branch} --depth 1 --recursive https://github.com/cloudfoundry/#{buildpack}-buildpack tmp/#{buildpack}-buildpack
+    system(<<-EOF)
+      set -e
+      GITHUB_URL=https://github.com/cloudfoundry/#{buildpack}-buildpack
+      git clone -q -b #{branch} --depth 1 --recursive "$GITHUB_URL" tmp/#{buildpack}-buildpack
       cd tmp/#{buildpack}-buildpack
       export BUNDLE_GEMFILE=cf.Gemfile
       bundle install
       bundle exec buildpack-packager cached
       cf delete-buildpack #{buildpack}-brat-buildpack -f
       cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) 100 --enable
-    `
+
+      echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
+    EOF
   end
 end
 
