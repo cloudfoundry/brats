@@ -38,6 +38,10 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
       expect(@app).to have_logged("PHP #{runtime_version}")
     end
 
+    it 'should not include any warning messages when loading all the extensions' do
+      expect(@app).to_not have_logged("Unable to load dynamic library")
+    end
+
     after :all do
       Machete::CF::DeleteApp.new.execute(@app)
       FileUtils.rm OPTIONS_JSON
@@ -86,6 +90,7 @@ def create_options_json(options = {})
     'PHP_VM' => 'php',
     "PHP_VERSION" => runtime_version,
     'WEB_SERVER' => web_server,
+    'PHP_EXTENSIONS' => %w{amqp bz2 curl dba exif fileinfo ftp gd gettext gmp igbinary imagick imap intl ldap mailparse mbstring mcrypt memcache memcached mongo msgpack mysql mysqli openssl pdo pdo_sqlite pdo_mysql pdo_pgsql pgsql phalcon phpiredis pspell redis soap sockets sundown twig xsl zip zlib},
     "#{web_server.upcase}_VERSION" => web_server_version
   }
 
