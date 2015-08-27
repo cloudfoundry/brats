@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/cf-buildpacks/machete
-  revision: 18e0b29ea87514cfcd69894df3961badfbdd80a0
-  tag: v0.0.14
+  revision: a73550f9783bd0283c3120e9d8a63fd01e9ccbb2
+  tag: v0.0.18
   specs:
-    machete (0.0.14)
+    machete (0.0.18)
       httparty
 
 GIT
@@ -73,4 +73,4 @@ DEPENDENCIES
   rspec-instafail
 
 BUNDLED WITH
-   1.10.3
+   1.10.6
