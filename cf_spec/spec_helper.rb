@@ -26,7 +26,7 @@ def install_buildpack(buildpack:, branch: BRATS_BRANCH)
       cd tmp/#{buildpack}-buildpack
       export BUNDLE_GEMFILE=cf.Gemfile
       bundle install
-      bundle exec buildpack-packager cached
+      bundle exec buildpack-packager --cached
       cf delete-buildpack #{buildpack}-brat-buildpack -f
       cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) 100 --enable
 
