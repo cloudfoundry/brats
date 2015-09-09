@@ -38,6 +38,14 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
       expect(@app).to have_logged("PHP #{runtime_version}")
     end
 
+    it 'should be loading redis' do
+      expect(@app).to be_running
+      2.times do
+        @browser.visit_path('/?redis=true')
+        expect(@browser).to have_body('Redis loads')
+      end
+    end
+
     it 'should not include any warning messages when loading all the extensions' do
       expect(@app).to_not have_logged(/The extension .* is not provided by this buildpack./)
     end
