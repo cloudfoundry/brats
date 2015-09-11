@@ -3,19 +3,15 @@
   <title>PHP Test</title>
  </head>
  <body>
- <?php
+<?php
 echo '<p>Hello World!</p>';
-if (htmlspecialchars($_GET["redis"])) {
-  try {
-    if (!class_exists('Redis')) {
-      throw new Exception('Class not found.');
-    }
-    $redis = new Redis();
-  } catch(Exception $e){
-    echo 'Redis failed to load: ', $e->getMessage();
-    return;
-  }
-  echo 'Redis loads';
+
+$name = $_SERVER['QUERY_STRING'];
+if (extension_loaded($name)) {
+  echo 'SUCCESS: ' . $name . ' loads.';
+}
+else {
+  echo 'ERROR: ' . $name . ' failed to load.';
 }
 ?>
  </body>
