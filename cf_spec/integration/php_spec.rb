@@ -47,7 +47,15 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
       end
     end
 
+    it 'should not load unknown module' do
+        expect(@app).to be_running
+        @browser.visit_path("/?something")
+        expect(@browser).to have_body("ERROR: something failed to load.")
+    end
+
     it 'should not include any warning messages when loading all the extensions' do
+      expect(@app).to be_running
+      @browser.visit_path("/")
       expect(@app).to_not have_logged(/The extension .* is not provided by this buildpack./)
     end
 
