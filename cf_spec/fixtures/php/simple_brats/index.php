@@ -6,12 +6,14 @@
 <?php
 echo '<p>Hello World!</p>';
 
-$name = $_SERVER['QUERY_STRING'];
-if (extension_loaded($name)) {
-  echo 'SUCCESS: ' . $name . ' loads.';
-}
-else {
-  echo 'ERROR: ' . $name . ' failed to load.';
+$names = $_SERVER['QUERY_STRING'];
+foreach (explode(",", $names) as $name) {
+  if (extension_loaded($name)) {
+    echo 'SUCCESS: ' . $name . ' loads.';
+  }
+  else {
+    echo 'ERROR: ' . $name . ' failed to load.';
+  }
 }
 ?>
  </body>
