@@ -38,7 +38,9 @@ describe 'For all supported Go versions' do
     let(:stack) { 'cflinuxfs2' }
 
     dependencies.each do |dependency|
-      create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+      if dependency['name'] == 'go'
+        create_test_for("#{dependency['name']} #{dependency['version']}", version: dependency['version'])
+      end
     end
   end
 
