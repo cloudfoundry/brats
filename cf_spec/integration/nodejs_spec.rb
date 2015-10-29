@@ -89,8 +89,8 @@ def create_package_json(node_engine)
       'node' => node_engine
     },
     'dependencies' => {
-      'bcrypt' => '0.8.3',
-      'bson-ext' => '0.1.6'
+      'bcrypt' => '0.8.5',
+      'bson-ext' => '0.1.13'
     }
   }
 
