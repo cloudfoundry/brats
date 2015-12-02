@@ -1,7 +1,26 @@
 require 'spec_helper'
 
-FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/php/simple_brats"
-OPTIONS_JSON = "#{FIXTURE_DIR}/.bp-config/options.json"
+module Hhvm
+  FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/php/simple_brats"
+  OPTIONS_JSON = "#{FIXTURE_DIR}/.bp-config/options.json"
+
+  def self.create_options_json(options = {})
+    runtime_version    = options[:runtime_version]
+    web_server         = options[:web_server]
+    web_server_version = options[:web_server_version]
+
+    options = {
+      'PHP_VM' => 'hhvm',
+      "HHVM_VERSION" => runtime_version,
+      'WEB_SERVER' => web_server,
+      "#{web_server.upcase}_VERSION" => web_server_version
+    }
+
+    File.open(OPTIONS_JSON, 'w') do |file|
+      file << JSON.generate(options)
+    end
+  end
+end
 
 RSpec.shared_examples :a_deploy_of_hhvm_app_to_cf do |runtime_version, web_server_binary, stack|
 
@@ -11,7 +30,7 @@ RSpec.shared_examples :a_deploy_of_hhvm_app_to_cf do |runtime_version, web_serve
   context "with hhvm-#{runtime_version} and web_server: #{web_server}-#{web_server_version}", version: runtime_version do
 
     before :all do
-      create_options_json({
+      Hhvm::create_options_json({
         :runtime_version    => runtime_version,
         :web_server         => web_server,
         :web_server_version => web_server_version
@@ -40,12 +59,12 @@ RSpec.shared_examples :a_deploy_of_hhvm_app_to_cf do |runtime_version, web_serve
 
     after :all do
       Machete::CF::DeleteApp.new.execute(@app)
-      FileUtils.rm OPTIONS_JSON
+      FileUtils.rm Hhvm::OPTIONS_JSON
     end
   end
 end
 
-describe 'Deploying CF apps' do
+describe 'Deploying CF apps', :language => 'php' do
   before(:all) { install_buildpack(buildpack: 'php') }
   after(:all) { cleanup_buildpack(buildpack: 'php') }
 
@@ -77,19 +96,4 @@ describe 'Deploying CF apps' do
   end
 end
 
-def create_options_json(options = {})
-  runtime_version    = options[:runtime_version]
-  web_server         = options[:web_server]
-  web_server_version = options[:web_server_version]
 
-  options = {
-    'PHP_VM' => 'hhvm',
-    "HHVM_VERSION" => runtime_version,
-    'WEB_SERVER' => web_server,
-    "#{web_server.upcase}_VERSION" => web_server_version
-  }
-
-  File.open(OPTIONS_JSON, 'w') do |file|
-    file << JSON.generate(options)
-  end
-end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'For all supported Go versions' do
+describe 'For all supported Go versions', :language=> 'go' do
   before(:all) { install_buildpack(buildpack: 'go') }
   after(:all) { cleanup_buildpack(buildpack: 'go') }
 

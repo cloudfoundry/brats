@@ -96,7 +96,7 @@ RSpec.shared_examples :a_deploy_of_jruby_app_to_cf do |ruby_version, jruby_versi
   end
 end
 
-describe 'For all supported JRuby versions' do
+describe 'For all supported JRuby versions', :language => 'ruby' do
   before(:all) { install_buildpack(buildpack: 'ruby') }
   after(:all) { cleanup_buildpack(buildpack: 'ruby') }
 

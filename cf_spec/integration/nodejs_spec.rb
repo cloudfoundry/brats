@@ -1,11 +1,33 @@
 require 'spec_helper'
 
-FIXTURE_DIR  = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
-PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
+module NodeJs
+  FIXTURE_DIR  = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
+  PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
+end
 
 RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
 
   context "with node-#{node_version}", version: node_version do
+
+    def create_package_json(node_engine)
+      package = {
+        'name' => 'node_web_app',
+        'version' => '0.0.0',
+        'description' => 'hello, world',
+        'main' => 'server.js',
+        'engines' => {
+          'node' => node_engine
+        },
+        'dependencies' => {
+          'bcrypt' => '0.8.5',
+          'bson-ext' => '0.1.13'
+        }
+      }
+
+      File.open(NodeJs::PACKAGE_JSON, 'w') do |file|
+        file << JSON.generate(package)
+      end
+    end
 
     before :all do
       create_package_json(node_version)
@@ -49,12 +71,12 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
 
     after :all do
       Machete::CF::DeleteApp.new.execute(@app)
-      FileUtils.rm PACKAGE_JSON
+      FileUtils.rm NodeJs::PACKAGE_JSON
     end
   end
 end
 
-describe 'Deploying CF apps' do
+describe 'Deploying CF apps',:language=> 'nodejs' do
   before(:all) { install_buildpack(buildpack: 'nodejs') }
   after(:all) { cleanup_buildpack(buildpack: 'nodejs') }
 
@@ -79,22 +101,3 @@ describe 'Deploying CF apps' do
 
 end
 
-def create_package_json(node_engine)
-  package = {
-    'name' => 'node_web_app',
-    'version' => '0.0.0',
-    'description' => 'hello, world',
-    'main' => 'server.js',
-    'engines' => {
-      'node' => node_engine
-    },
-    'dependencies' => {
-      'bcrypt' => '0.8.5',
-      'bson-ext' => '0.1.13'
-    }
-  }
-
-  File.open(PACKAGE_JSON, 'w') do |file|
-    file << JSON.generate(package)
-  end
-end
