@@ -51,6 +51,11 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_versio
       expect(@app).to have_logged /Downloading and installing node \d+\.\d+\.\d+/
     end
 
+    after :all do
+      Machete::CF::DeleteApp.new.execute(@app)
+      FileUtils.rm NodeJs::PACKAGE_JSON
+    end
+
   end
 end
 
