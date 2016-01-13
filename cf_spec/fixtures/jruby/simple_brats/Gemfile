@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '<%= ruby_version %>', :engine => 'jruby', :engine_version => '<%= engine_version %>'
+ruby '<%= ruby_version %>', engine: 'jruby', engine_version: '<%= engine_version %>'
 
 gem 'nokogiri'
 gem 'sinatra'

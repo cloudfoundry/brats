@@ -15,7 +15,7 @@ end
 
 get '/nokogiri' do
   doc = Nokogiri::XML(open('test.xml'))
-  doc.xpath("//xml")
+  doc.xpath('//xml')
 end
 
 get '/em' do
@@ -30,7 +30,7 @@ get '/em' do
 end
 
 get '/bcrypt' do
-  BCrypt::Password.create("Hello, bcrypt")
+  BCrypt::Password.create('Hello, bcrypt')
 end
 
 get '/bson' do

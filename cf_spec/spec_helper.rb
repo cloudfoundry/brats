@@ -7,7 +7,7 @@ require 'fileutils'
 require 'yaml'
 
 `mkdir -p log`
-Machete.logger = Machete::Logger.new("log/integration.log")
+Machete.logger = Machete::Logger.new('log/integration.log')
 
 BRATS_BRANCH = ENV['BRATS_BRANCH'] || 'master'
 
@@ -34,7 +34,6 @@ def install_buildpack(buildpack:, branch: BRATS_BRANCH)
     EOF
   end
 end
-
 
 def cleanup_buildpack(buildpack:)
   `

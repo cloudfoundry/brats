@@ -9,4 +9,3 @@ gem 'bcrypt'
 gem 'bson'
 gem 'mysql'
 gem 'pg'
-

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'For all supported Go versions', :language=> 'go' do
+describe 'For all supported Go versions', language: 'go' do
   before(:all) { install_buildpack(buildpack: 'go') }
   after(:all) { cleanup_buildpack(buildpack: 'go') }
 
@@ -8,7 +8,7 @@ describe 'For all supported Go versions', :language=> 'go' do
     parsed_manifest(buildpack: 'go').fetch('dependencies')
   end
 
-  def self.create_test_for(test_name, options={})
+  def self.create_test_for(test_name, options = {})
     options[:engine_version] ||= options[:version]
 
     context "with #{test_name}" do
@@ -25,7 +25,7 @@ describe 'For all supported Go versions', :language=> 'go' do
 
       after { Machete::CF::DeleteApp.new.execute(app) }
 
-      it "runs a simple webserver", version: options[:version] do
+      it 'runs a simple webserver', version: options[:version] do
         generate_app('simple_brats', version)
         assert_correct_version_installed(version)
 
@@ -46,7 +46,7 @@ describe 'For all supported Go versions', :language=> 'go' do
 
   def generate_app(app_name, version)
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'src', app_name)
-		copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'tmp', version.to_s, 'src', app_name)
+    copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'tmp', version.to_s, 'src', app_name)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)
@@ -60,7 +60,6 @@ describe 'For all supported Go versions', :language=> 'go' do
     expect(app).to be_running(120)
     expect(app).to have_logged "Installing go#{version}"
   end
-
 
   def assert_root_contains(text)
     2.times do

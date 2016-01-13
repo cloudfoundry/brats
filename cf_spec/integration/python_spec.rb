@@ -18,7 +18,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
-    it "runs a simple webserver", version: python_version do
+    it 'runs a simple webserver', version: python_version do
       expect(@app).to be_running
       expect(@app).to have_logged "Installing runtime (python-#{python_version})"
 
@@ -60,7 +60,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
 
   def generate_app(app_name, version)
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'python', app_name)
-		copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'python', 'tmp', version.to_s, app_name)
+    copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'python', 'tmp', version.to_s, app_name)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)
@@ -78,7 +78,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   end
 end
 
-describe 'For all supported Python versions', :language => 'python' do
+describe 'For all supported Python versions', language: 'python' do
   before(:all) { install_buildpack(buildpack: 'python') }
   after(:all) { cleanup_buildpack(buildpack: 'python') }
 
@@ -89,7 +89,7 @@ describe 'For all supported Python versions', :language => 'python' do
 
   ['cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
-      dependencies.select{|d| d['name'] == 'python' && d['cf_stacks'].include?(stack)}.each do |dependency|
+      dependencies.select { |d| d['name'] == 'python' && d['cf_stacks'].include?(stack) }.each do |dependency|
         it_behaves_like :a_deploy_of_python_app_to_cf, dependency['version'], stack
       end
     end

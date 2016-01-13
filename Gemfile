@@ -8,3 +8,8 @@ gem 'rspec'
 gem 'rspec-instafail'
 gem 'pry'
 gem 'bcrypt'
+
+group :development do
+  gem 'rubocop'
+  gem 'rubocop-rspec'
+end
