@@ -1,9 +1,9 @@
 require 'bundler/setup'
+require 'fileutils'
+require 'json'
 require 'machete'
 require 'machete/matchers'
 require 'open-uri'
-require 'json'
-require 'fileutils'
 require 'yaml'
 
 `mkdir -p log`
@@ -16,7 +16,7 @@ def parsed_manifest(buildpack:, branch: BRATS_BRANCH)
   YAML.load(open(manifest_url))
 end
 
-def install_buildpack(buildpack:, branch: BRATS_BRANCH)
+def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
     system(<<-EOF)
@@ -28,11 +28,30 @@ def install_buildpack(buildpack:, branch: BRATS_BRANCH)
       bundle install
       bundle exec buildpack-packager --cached || bundle exec buildpack-packager cached
       cf delete-buildpack #{buildpack}-brat-buildpack -f
-      cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) 100 --enable
+      cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) #{position} --enable
 
       echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
     EOF
   end
+end
+
+def install_java_buildpack(branch: BRATS_BRANCH, position: 100)
+  FileUtils.mkdir_p('tmp')
+  Bundler.with_clean_env do
+    system(<<-EOF)
+      set -e
+      GITHUB_URL=https://github.com/cloudfoundry/java-buildpack
+      git clone -q -b #{branch} --depth 1 --recursive "$GITHUB_URL" tmp/java-buildpack
+      cd tmp/java-buildpack
+      bundle install
+      bundle exec rake package OFFLINE=true PINNED=true
+      cf delete-buildpack java-brat-buildpack -f
+      cf create-buildpack java-brat-buildpack $(ls build/java-buildpack-offline-*.zip | head -n 1) #{position} --enable
+
+      echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
+    EOF
+  end
+
 end
 
 def cleanup_buildpack(buildpack:)
@@ -41,3 +60,8 @@ def cleanup_buildpack(buildpack:)
     cf delete-buildpack #{buildpack}-brat-buildpack -f
   `
 end
+
+require_relative 'support/be_safe_matcher'
+require_relative 'support/ruby_template_app'
+require_relative 'support/java_template_app'
+
