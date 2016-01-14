@@ -51,11 +51,37 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       expect(@app).to be_running
       expect(template.name).to be_safe
     end
-
   end
 
   context 'a PHP app' do
+    after do
+      Machete::CF::DeleteApp.new.execute(@app)
+      cleanup_buildpack(buildpack: 'php')
+    end
 
+    it 'will be safe' do
+      install_buildpack(buildpack: 'php', position: 1)
+
+      manifest     = parsed_manifest(buildpack: 'php')
+      php_version = manifest['dependencies'].find{ |d| d['name'] == 'php' }['version']
+      nginx_version = manifest['dependencies'].find{ |d| d['name'] == 'nginx' }['version']
+
+      template = PHPTemplateApp.new(
+        runtime_version: php_version,
+        web_server: 'nginx',
+        web_server_version: nginx_version
+      )
+      template.generate!
+
+      @app = Machete.deploy_app(
+        template.path,
+        name: template.name,
+        service: true
+      )
+
+      expect(@app).to be_running
+      expect(template.name).to be_safe
+    end
   end
 
   context 'a nodeJS app' do

@@ -1,108 +1,24 @@
 require 'spec_helper'
 require 'pry'
 
-module Php
-  FIXTURE_DIR = "#{File.dirname(__FILE__)}/../fixtures/php/simple_brats"
-  OPTIONS_JSON = "#{FIXTURE_DIR}/.bp-config/options.json"
-
-  def self.create_options_json(options = {})
-    runtime_version    = options[:runtime_version]
-    web_server         = options[:web_server]
-    web_server_version = options[:web_server_version]
-
-    php_extensions = {}
-
-    external_extensions = %w(
-      amqp
-      igbinary
-      imagick
-      intl
-      lua
-      mailparse
-      memcache
-      memcached
-      mongo
-      msgpack
-      phalcon
-      phpiredis
-      protobuf
-      protocolbuffers
-      redis
-      suhosin
-      sundown
-      twig
-      xcache
-      xdebug
-      yaf)
-    included_extensions = %w(
-      bz2
-      curl
-      dba
-      exif
-      fileinfo
-      ftp
-      gd
-      gettext
-      gmp
-      imap
-      ldap
-      mbstring
-      mcrypt
-      mysql
-      mysqli
-      openssl
-      pdo
-      pdo_mysql
-      pdo_pgsql
-      pdo_sqlite
-      pgsql
-      phalcon
-      pspell
-      soap
-      sockets
-      xsl
-      zip
-      zlib)
-
-    php_extensions['5.6'] = included_extensions + external_extensions
-    php_extensions['5.5'] = included_extensions + external_extensions + ['xhprof']
-    php_extensions['5.4'] = php_extensions['5.6'] # TODO: deprecated, to be removed in next release
-
-    to_major_minor_version = lambda do |full_version|
-      full_version.split('.')[0..1].inject { |x, y| "#{x}.#{y}" }
-    end
-
-    options = {
-      'PHP_VM'                       => 'php',
-      'PHP_VERSION'                  => runtime_version,
-      'WEB_SERVER'                   => web_server,
-      'PHP_EXTENSIONS'               => php_extensions[to_major_minor_version.call(runtime_version)],
-      'ZEND_EXTENSIONS'              => ['ioncube'],
-      "#{web_server.upcase}_VERSION" => web_server_version
-    }
-
-    File.open(OPTIONS_JSON, 'w') do |file|
-      file << JSON.generate(options)
-    end
-
-    options
-  end
-end
-
 RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server_binary, stack|
   web_server         = web_server_binary['name']
   web_server_version = web_server_binary['version']
 
   context "with php-#{runtime_version} and web_server: #{web_server}-#{web_server_version}", version: runtime_version do
     before :all do
-      @options = Php.create_options_json({
-                                           runtime_version: runtime_version,
-                                           web_server: web_server,
-                                           web_server_version: web_server_version
-                                         })
+      template = PHPTemplateApp.new(
+        runtime_version: runtime_version,
+        web_server: web_server,
+        web_server_version: web_server_version
+      )
+      template.generate!
+
+      @options = template.options
+
       @app = Machete.deploy_app(
-        'php/simple_brats',
-        name: "simple-php-#{Time.now.to_i}",
+        template.path,
+        name: template.name,
         buildpack: 'php-brat-buildpack',
         stack: stack
       )
@@ -140,7 +56,6 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
 
     after :all do
       Machete::CF::DeleteApp.new.execute(@app)
-      FileUtils.rm Php::OPTIONS_JSON
     end
   end
 end
