@@ -111,6 +111,26 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a staticfile app' do
+    after do
+      Machete::CF::DeleteApp.new.execute(@app)
+      cleanup_buildpack(buildpack: 'staticfile')
+    end
+
+    it 'will be safe' do
+      install_buildpack(buildpack: 'staticfile', position: 1)
+
+      template =StaticfileTemplateApp.new
+      template.generate!
+
+      @app = Machete.deploy_app(
+        template.path,
+        name: template.name,
+        service: true
+      )
+
+      expect(@app).to be_running
+      expect(template.name).to be_safe
+    end
 
   end
 
