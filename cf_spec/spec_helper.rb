@@ -61,4 +61,4 @@ def cleanup_buildpack(buildpack:)
   `
 end
 
-Dir['./cf_spec/support/**/*.rb'].each { |f| puts f; require f }
+Dir['./cf_spec/support/**/*.rb'].each { |f| require f }

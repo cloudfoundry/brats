@@ -1,35 +1,14 @@
 require 'spec_helper'
 
-module NodeJs
-  FIXTURE_DIR  = "#{File.dirname(__FILE__)}/../fixtures/nodejs/simple_brats"
-  PACKAGE_JSON = "#{FIXTURE_DIR}/package.json"
-  def self.create_package_json(node_engine)
-    package = {
-      'name' => 'node_web_app',
-      'version' => '0.0.0',
-      'description' => 'hello, world',
-      'main' => 'server.js',
-      'engines' => {
-        'node' => node_engine
-      },
-      'dependencies' => {
-        'bcrypt' => '0.8.5',
-        'bson-ext' => '0.1.13'
-      }
-    }
-    File.open(NodeJs::PACKAGE_JSON, 'w') do |file|
-      file << JSON.generate(package)
-    end
-  end
-end
-
 RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_version, stack|
   context "with node-#{node_version}", version: node_version do
     before :all do
-      NodeJs.create_package_json(node_version)
+      template = NodeJSTemplateApp.new(node_version)
+      template.generate!
+
       @app = Machete.deploy_app(
-        'nodejs/simple_brats',
-        name: "simple-nodejs-#{Time.now.to_i}",
+        template.path,
+        name: template.name,
         buildpack: 'nodejs-brat-buildpack',
         stack: stack
       )
@@ -52,7 +31,6 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_versio
 
     after :all do
       Machete::CF::DeleteApp.new.execute(@app)
-      FileUtils.rm NodeJs::PACKAGE_JSON
     end
   end
 end
