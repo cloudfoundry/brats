@@ -28,6 +28,29 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a golang app' do
+    after do
+      Machete::CF::DeleteApp.new.execute(@app)
+      cleanup_buildpack(buildpack: 'go')
+    end
+
+    it 'will be safe' do
+      install_buildpack(buildpack: 'go', position: 1)
+
+      manifest     = parsed_manifest(buildpack: 'go')
+      go_version = manifest['dependencies'].find{ |d| d['name'] == 'go' }['version']
+
+      template = GoTemplateApp.new(go_version)
+      template.generate!
+
+      @app = Machete.deploy_app(
+        template.path,
+        name: template.name,
+        service: true
+      )
+
+      expect(@app).to be_running
+      expect(template.name).to be_safe
+    end
 
   end
 

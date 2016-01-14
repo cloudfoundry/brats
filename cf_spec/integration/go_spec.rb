@@ -9,14 +9,15 @@ describe 'For all supported Go versions', language: 'go' do
   end
 
   def self.create_test_for(test_name, options = {})
-    options[:engine_version] ||= options[:version]
-
     context "with #{test_name}" do
       let(:version) { options[:version] }
       let(:app) do
+        template = GoTemplateApp.new(version)
+        template.generate!
+
         Machete.deploy_app(
-          "go/tmp/#{version}/src/simple_brats",
-          name: "simple-go-#{Time.now.to_i}",
+          template.path,
+          name: template.name,
           buildpack: 'go-brat-buildpack',
           stack: stack
         )
@@ -26,9 +27,7 @@ describe 'For all supported Go versions', language: 'go' do
       after { Machete::CF::DeleteApp.new.execute(app) }
 
       it 'runs a simple webserver', version: options[:version] do
-        generate_app('simple_brats', version)
         assert_correct_version_installed(version)
-
         assert_root_contains('Hello, World')
       end
     end
@@ -44,17 +43,6 @@ describe 'For all supported Go versions', language: 'go' do
     end
   end
 
-  def generate_app(app_name, version)
-    origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'src', app_name)
-    copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'tmp', version.to_s, 'src', app_name)
-    FileUtils.rm_rf(copied_template_path)
-    FileUtils.mkdir_p(File.dirname(copied_template_path))
-    FileUtils.cp_r(origin_template_path, copied_template_path)
-
-    ['Godeps.json'].each do |file|
-      evaluate_erb(File.join(copied_template_path, 'Godeps', file), binding)
-    end
-  end
 
   def assert_correct_version_installed(version)
     expect(app).to be_running(120)
@@ -68,10 +56,4 @@ describe 'For all supported Go versions', language: 'go' do
     end
   end
 
-  def evaluate_erb(file_path, our_binding)
-    template = File.read(file_path)
-    f = File.open(file_path, 'w')
-    f << ERB.new(template).result(our_binding)
-    f.close
-  end
 end
