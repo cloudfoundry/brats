@@ -61,7 +61,4 @@ def cleanup_buildpack(buildpack:)
   `
 end
 
-require_relative 'support/be_safe_matcher'
-require_relative 'support/ruby_template_app'
-require_relative 'support/java_template_app'
-
+Dir['./cf_spec/support/**/*.rb'].each { |f| puts f; require f }

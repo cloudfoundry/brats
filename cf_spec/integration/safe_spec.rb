@@ -1,6 +1,49 @@
 require 'spec_helper'
 
 RSpec.describe 'When testing for safeness of a buildpack' do
+  context 'a Python app' do
+    after do
+      Machete::CF::DeleteApp.new.execute(@app)
+      cleanup_buildpack(buildpack: 'python')
+    end
+
+    it 'will be safe' do
+      install_buildpack(buildpack: 'python', position: 1)
+
+      manifest     = parsed_manifest(buildpack: 'python')
+      python_version = manifest['dependencies'].find{ |d| d['name'] == 'python' }['version']
+
+      template = PythonTemplateApp.new(python_version)
+      template.generate!
+
+      @app = Machete.deploy_app(
+        template.path,
+        name: template.name,
+        service: true
+      )
+
+      expect(@app).to be_running
+      expect(template.name).to be_safe
+    end
+
+  end
+
+  context 'a golang app' do
+
+  end
+
+  context 'a PHP app' do
+
+  end
+
+  context 'a nodeJS app' do
+
+  end
+
+  context 'a staticfile app' do
+
+  end
+
   context 'a Ruby app' do
     after do
       Machete::CF::DeleteApp.new.execute(@app)
