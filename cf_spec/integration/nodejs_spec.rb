@@ -38,13 +38,16 @@ end
 RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
   context "with node-#{node_version}", version: node_version do
     before :all do
-      NodeJs.create_package_json(node_version)
+      template = NodeJSTemplateApp.new(node_version)
+      template.generate!
+
       @app = Machete.deploy_app(
-        'nodejs/simple_brats',
-        name: "simple-nodejs-#{Time.now.to_i}",
+        template.path,
+        name: template.name,
         buildpack: 'nodejs-brat-buildpack',
         stack: stack
       )
+
       @browser = Machete::Browser.new(@app)
     end
 
@@ -78,7 +81,6 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
 
     after :all do
       Machete::CF::DeleteApp.new.execute(@app)
-      FileUtils.rm NodeJs::PACKAGE_JSON
     end
   end
 end
