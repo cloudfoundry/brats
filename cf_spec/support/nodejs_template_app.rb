@@ -6,7 +6,7 @@ class NodeJSTemplateApp
   end
 
   def path
-    "nodejs/tmp/#{nodejs_version}/simple_brats"
+    Shellwords.shellescape("nodejs/tmp/#{nodejs_version}/simple_brats")
   end
 
   def name

@@ -8,7 +8,7 @@ class PHPTemplateApp
   end
 
   def path
-    "php/tmp/#{runtime_version}/simple_brats"
+    Shellwords.shellescape("php/tmp/#{runtime_version}/simple_brats")
   end
 
   def name

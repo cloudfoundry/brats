@@ -5,6 +5,7 @@ require 'machete'
 require 'machete/matchers'
 require 'open-uri'
 require 'yaml'
+require 'shellwords'
 
 `mkdir -p log`
 Machete.logger = Machete::Logger.new('log/integration.log')

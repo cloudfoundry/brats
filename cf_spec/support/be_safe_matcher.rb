@@ -21,7 +21,7 @@ def inspect_app(app_name)
   Dir.mktmpdir do |tmp_dir|
     Dir.chdir(tmp_dir) do
       system("cf curl /v2/apps/#{app_guid}/droplet/download --output droplet.tgz")
-      raise 'Droplet could not be unarchive' unless system('tar xzf droplet.tgz --warning=no-timestamp')
+      raise 'Droplet could not be unarchive' unless system('tar xzf droplet.tgz 2>/dev/null')
 
       envs_json = JSON.parse(`cf curl /v2/apps/#{app_guid}/env`.chomp)
       logged_output = ''

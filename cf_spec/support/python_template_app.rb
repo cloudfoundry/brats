@@ -6,7 +6,7 @@ class PythonTemplateApp
   end
 
   def path
-    "python/tmp/#{python_version}/simple_brats"
+    Shellwords.shellescape("python/tmp/#{python_version}/simple_brats")
   end
 
   def name

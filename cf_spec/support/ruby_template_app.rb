@@ -6,7 +6,7 @@ class RubyTemplateApp
   end
 
   def path
-    "ruby/tmp/#{ruby_version}/simple_brats"
+    Shellwords.shellescape("ruby/tmp/#{ruby_version}/simple_brats")
   end
 
   def name

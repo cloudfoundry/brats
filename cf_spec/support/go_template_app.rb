@@ -6,7 +6,7 @@ class GoTemplateApp
   end
 
   def path
-    "go/tmp/#{go_version}/src/simple_brats"
+    Shellwords.shellescape("go/tmp/#{go_version}/src/simple_brats")
   end
 
   def name
