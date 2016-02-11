@@ -60,7 +60,6 @@ class PHPTemplateApp
       ldap
       mbstring
       mcrypt
-      mysql
       mysqli
       openssl
       pdo
@@ -68,16 +67,26 @@ class PHPTemplateApp
       pdo_pgsql
       pdo_sqlite
       pgsql
-      phalcon
       pspell
       soap
       sockets
       xsl
       zip
       zlib)
-    php_extensions['5.6'] = included_extensions + external_extensions
-    php_extensions['5.5'] = included_extensions + external_extensions + ['xhprof']
+    php5_included_extensions = %w(
+      mysql
+      phalcon
+    )
+    php_extensions['5.6'] = included_extensions + php5_included_extensions + external_extensions
+    php_extensions['5.5'] = included_extensions + php5_included_extensions + external_extensions + ['xhprof']
     php_extensions['5.4'] = php_extensions['5.6'] # TODO: deprecated, to be removed in next release
+    php_extensions['7.0'] = included_extensions + %w(
+      mailparse
+      mongodb
+      msgpack
+      yaf
+      lua
+    )
 
     to_major_minor_version = lambda do |full_version|
       full_version.split('.')[0..1].inject { |x, y| "#{x}.#{y}" }

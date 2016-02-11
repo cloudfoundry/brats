@@ -82,7 +82,9 @@ describe 'Deploying CF apps', language: 'php' do
         web_servers.select {|web_server|
           web_server['cf_stacks'].include?(stack)
         }.each do |web_server|
-          it_behaves_like :a_deploy_of_php_app_to_cf, php_runtime['version'], web_server, stack
+          if php_runtime['version'].include?('7.0')
+            it_behaves_like :a_deploy_of_php_app_to_cf, php_runtime['version'], web_server, stack
+          end
         end
       end
     end
