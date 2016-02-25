@@ -21,7 +21,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
 
     it 'runs a simple webserver', version: python_version do
       expect(@app).to be_running
-      expect(@app).to have_logged "Installing runtime (python-#{python_version})"
+      expect(@app).to have_logged /Installing.*python-#{python_version}/
 
       2.times do
         browser.visit_path('/')
