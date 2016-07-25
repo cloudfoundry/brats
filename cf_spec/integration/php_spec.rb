@@ -61,8 +61,10 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
 end
 
 describe 'Deploying CF apps', language: 'php' do
-  before(:all) { install_buildpack(buildpack: 'php') }
-  after(:all) { cleanup_buildpack(buildpack: 'php') }
+  before(:all) do
+    cleanup_buildpack(buildpack: 'php')
+    install_buildpack(buildpack: 'php')
+  end
 
   def self.dependencies
     parsed_manifest(buildpack: 'php')

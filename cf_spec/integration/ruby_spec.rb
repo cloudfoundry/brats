@@ -79,8 +79,10 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
 end
 
 describe 'For all supported Ruby versions', language: 'ruby' do
-  before(:all) { install_buildpack(buildpack: 'ruby') }
-  after(:all) { cleanup_buildpack(buildpack: 'ruby') }
+  before(:all) do
+    cleanup_buildpack(buildpack: 'ruby')
+    install_buildpack(buildpack: 'ruby')
+  end
 
   def self.dependencies
     parsed_manifest(buildpack: 'ruby')

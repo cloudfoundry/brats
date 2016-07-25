@@ -61,8 +61,10 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
 end
 
 describe 'For all supported Python versions', language: 'python' do
-  before(:all) { install_buildpack(buildpack: 'python') }
-  after(:all) { cleanup_buildpack(buildpack: 'python') }
+  before(:all) do
+    cleanup_buildpack(buildpack: 'python')
+    install_buildpack(buildpack: 'python')
+  end
 
   def self.dependencies
     parsed_manifest(buildpack: 'python')

@@ -1,16 +1,22 @@
 require 'spec_helper'
 
 RSpec.describe 'When testing for safeness of a buildpack' do
-  context 'a Python app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'python')
+  before do
+    cleanup_buildpack(buildpack: buildpack_name)
+    if buildpack_name == 'java'
+      install_java_buildpack(position: 1)
+    else
+      install_buildpack(buildpack: buildpack_name, position: 1)
     end
+  end
+
+  after { Machete::CF::DeleteApp.new.execute(@app) }
+
+  context 'a Python app' do
+    let(:buildpack_name) { 'python' }
 
     it 'will be safe' do
-      install_buildpack(buildpack: 'python', position: 1)
-
-      manifest     = parsed_manifest(buildpack: 'python')
+      manifest     = parsed_manifest(buildpack: buildpack_name)
       python_version = manifest['dependencies'].find{ |d| d['name'] == 'python' }['version']
 
       template = PythonTemplateApp.new(python_version)
@@ -28,15 +34,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a golang app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'go')
-    end
+    let(:buildpack_name) { 'go' }
 
     it 'will be safe' do
-      install_buildpack(buildpack: 'go', position: 1)
-
-      manifest     = parsed_manifest(buildpack: 'go')
+      manifest     = parsed_manifest(buildpack: buildpack_name)
       go_version = manifest['dependencies'].find{ |d| d['name'] == 'go' }['version']
 
       template = GoTemplateApp.new(go_version)
@@ -54,15 +55,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a PHP app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'php')
-    end
+    let(:buildpack_name) { 'php' }
 
     it 'will be safe' do
-      install_buildpack(buildpack: 'php', position: 1)
-
-      manifest     = parsed_manifest(buildpack: 'php')
+      manifest     = parsed_manifest(buildpack: buildpack_name)
       php_version = manifest['dependencies'].find{ |d| d['name'] == 'php' }['version']
       nginx_version = manifest['dependencies'].find{ |d| d['name'] == 'nginx' }['version']
 
@@ -85,15 +81,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a nodeJS app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'nodejs')
-    end
+    let(:buildpack_name) { 'nodejs' }
 
     it 'will be safe' do
-      install_buildpack(buildpack: 'nodejs', position: 1)
-
-      manifest     = parsed_manifest(buildpack: 'nodejs')
+      manifest     = parsed_manifest(buildpack: buildpack_name)
       nodejs_version = manifest['dependencies'].find{ |d| d['name'] == 'node' }['version']
 
       template = NodeJSTemplateApp.new(nodejs_version)
@@ -111,15 +102,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a staticfile app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'staticfile')
-    end
+    let(:buildpack_name) { 'staticfile' }
 
     it 'will be safe' do
-      install_buildpack(buildpack: 'staticfile', position: 1)
-
-      template =StaticfileTemplateApp.new
+      template = StaticfileTemplateApp.new
       template.generate!
 
       @app = Machete.deploy_app(
@@ -135,15 +121,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a Ruby app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'ruby')
-    end
+    let(:buildpack_name) { 'ruby' }
 
     it 'will be safe' do
-      install_buildpack(buildpack: 'ruby', position: 1)
-
-      manifest     = parsed_manifest(buildpack: 'ruby')
+      manifest     = parsed_manifest(buildpack: buildpack_name)
       ruby_version = manifest['dependencies'].find{ |d| d['name'] == 'ruby' }['version']
 
       template = RubyTemplateApp.new(ruby_version)
@@ -161,13 +142,9 @@ RSpec.describe 'When testing for safeness of a buildpack' do
   end
 
   context 'a Java app' do
-    after do
-      Machete::CF::DeleteApp.new.execute(@app)
-      cleanup_buildpack(buildpack: 'java')
-    end
+    let(:buildpack_name) { 'java' }
 
     it 'will be safe' do
-      install_java_buildpack(position: 1)
       template = JavaTemplateApp.new
 
       @app = Machete.deploy_app(

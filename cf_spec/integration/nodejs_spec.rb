@@ -90,8 +90,10 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
 end
 
 describe 'Deploying CF apps', language: 'nodejs' do
-  before(:all) { install_buildpack(buildpack: 'nodejs') }
-  after(:all) { cleanup_buildpack(buildpack: 'nodejs') }
+  before(:all) do
+    cleanup_buildpack(buildpack: 'nodejs')
+    install_buildpack(buildpack: 'nodejs')
+  end
 
   def self.nodes
     parsed_manifest(buildpack: 'nodejs')
