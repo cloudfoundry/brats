@@ -1,4 +1,11 @@
-# Usage
+Buildpack Runtime Acceptance Tests
+---
+
+### Functionality
+
+Test that the compiled binaries of the buildpacks are working as expected.
+
+### Usage
 
 Example of testing the Ruby buildpack:
 
