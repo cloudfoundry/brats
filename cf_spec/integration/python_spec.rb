@@ -6,12 +6,12 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      template = PythonTemplateApp.new(python_version)
-      template.generate!
+      @template = PythonTemplateApp.new(python_version)
+      @template.generate!
 
       @app = Machete.deploy_app(
-        template.path,
-        name: template.name,
+        @template.path,
+        name: @template.name,
         buildpack: 'python-brat-buildpack',
         stack: stack
       )
@@ -55,6 +55,27 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
       2.times do
         browser.visit_path('/redis')
         expect(browser).to have_body 'Hello'
+      end
+    end
+
+    context 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+      before do
+        cleanup_buildpack(buildpack: 'python')
+        install_buildpack_with_uri_credentials(buildpack: 'python')
+        @app = Machete.deploy_app(
+          @template.path,
+          name: @template.name,
+          buildpack: 'python-brat-buildpack',
+          stack: stack
+        )
+      end
+
+      it 'does not include credentials in logged dependency uris' do
+        credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+        python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+
+        expect(@app).to_not have_logged(credential_uri)
+        expect(@app).to have_logged(python_uri)
       end
     end
   end
