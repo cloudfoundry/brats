@@ -1,47 +1,48 @@
 require 'spec_helper'
-require 'pry'
 
-RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server_binary, stack|
+def deploy_php_app(php_version, stack, web_server, web_server_version)
+  template = PHPTemplateApp.new(
+    runtime_version: php_version,
+    web_server: web_server,
+    web_server_version: web_server_version
+  )
+  template.generate!
+  [Machete.deploy_app(
+    template.path,
+    name: template.name,
+    buildpack: 'php-brat-buildpack',
+    stack: stack
+  ), template.options]
+end
+
+RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_binary, stack|
   web_server         = web_server_binary['name']
   web_server_version = web_server_binary['version']
 
-  context "with php-#{runtime_version} and web_server: #{web_server}-#{web_server_version}", version: runtime_version do
-    before :all do
-      template = PHPTemplateApp.new(
-        runtime_version: runtime_version,
-        web_server: web_server,
-        web_server_version: web_server_version
-      )
-      template.generate!
+  context "with php-#{php_version} and web_server: #{web_server}-#{web_server_version}", version: php_version do
+    let(:browser) { Machete::Browser.new(@app) }
 
-      @options = template.options
+    before(:all) { @app, @options = deploy_php_app(php_version, stack, web_server, web_server_version) }
 
-      @app = Machete.deploy_app(
-        template.path,
-        name: template.name,
-        buildpack: 'php-brat-buildpack',
-        stack: stack
-      )
-      @browser = Machete::Browser.new(@app)
-    end
+    after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
     it 'should be running' do
       expect(@app).to be_running
       2.times do
-        @browser.visit_path('/')
-        expect(@browser).to have_body('Hello World!')
+        browser.visit_path('/')
+        expect(browser).to have_body('Hello World!')
       end
     end
 
     it 'should have the correct version' do
       expect(@app).to have_logged('Installing PHP')
-      expect(@app).to have_logged("PHP #{runtime_version}")
+      expect(@app).to have_logged("PHP #{php_version}")
     end
 
     it 'should load all of the modules specified in options.json' do
-      @browser.visit_path("/?#{@options['PHP_EXTENSIONS'].join(',')}")
+      browser.visit_path("/?#{@options['PHP_EXTENSIONS'].join(',')}")
       @options['PHP_EXTENSIONS'].each do |extension|
-        expect(@browser).to have_body("SUCCESS: #{extension} loads")
+        expect(browser).to have_body("SUCCESS: #{extension} loads")
       end
     end
 
@@ -50,42 +51,31 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |runtime_version, web_server
     end
 
     it 'should not load unknown module' do
-      @browser.visit_path('/?something')
-      expect(@browser).to have_body('ERROR: something failed to load.')
-    end
-
-    after :all do
-      Machete::CF::DeleteApp.new.execute(@app)
+      browser.visit_path('/?something')
+      expect(browser).to have_body('ERROR: something failed to load.')
     end
   end
 end
 
-describe 'Deploying CF apps', language: 'php' do
-  before(:all) do
-    cleanup_buildpack(buildpack: 'php')
-    install_buildpack(buildpack: 'php')
-  end
+describe 'For the php buildpack', language: 'php' do
+  describe 'For all supported PHP versions' do
+    before(:all) do
+      cleanup_buildpack(buildpack: 'php')
+      install_buildpack(buildpack: 'php')
+    end
 
-  def self.dependencies
-    parsed_manifest(buildpack: 'php')
-      .fetch('dependencies')
-  end
+    valid_web_servers  = %w(httpd nginx)
 
-  php_runtimes       = dependencies.select { |binary| binary['name'] == 'php' }
+    ['cflinuxfs2'].each do |stack|
+      context "on the #{stack} stack", stack: stack do
+        php_versions = dependency_versions_in_manifest('php', 'php', stack)
 
-  valid_web_servers  = %w(httpd nginx)
-  web_servers        = dependencies.select { |binary| valid_web_servers.include?(binary['name']) }
+        dependencies = parsed_manifest(buildpack: 'php').fetch('dependencies')
+        web_servers  = dependencies.select { |binary| valid_web_servers.include?(binary['name']) && binary['cf_stacks'].include?('cflinuxfs2') }
 
-  ['cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack", stack: stack do
-      php_runtimes.select { |php_runtime|
-        php_runtime['cf_stacks'].include?(stack)
-      }.each do |php_runtime|
-        web_servers.select {|web_server|
-          web_server['cf_stacks'].include?(stack)
-        }.each do |web_server|
-          if php_runtime['version'].include?('7.0')
-            it_behaves_like :a_deploy_of_php_app_to_cf, php_runtime['version'], web_server, stack
+        php_versions.each do |php_version|
+          web_servers.each do |web_server|
+            it_behaves_like :a_deploy_of_php_app_to_cf, php_version, web_server, stack
           end
         end
       end
