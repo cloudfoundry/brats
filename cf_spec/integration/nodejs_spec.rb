@@ -77,47 +77,49 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
   end
 end
 
-describe 'Deploying CF apps', language: 'nodejs' do
-  before(:all) do
-    cleanup_buildpack(buildpack: 'nodejs')
-    install_buildpack(buildpack: 'nodejs')
-  end
+describe 'For the nodejs buildpack', language: 'nodejs' do
+  describe 'Deploying CF apps' do
+    before(:all) do
+      cleanup_buildpack(buildpack: 'nodejs')
+      install_buildpack(buildpack: 'nodejs')
+    end
 
-  ['cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack", stack: stack do
+    ['cflinuxfs2'].each do |stack|
+      context "on the #{stack} stack", stack: stack do
 
-      node_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
+        node_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
 
-      node_versions.each do |node_version|
-        it_behaves_like :a_deploy_of_nodejs_app_to_cf, node_version, stack
-      end
+        node_versions.each do |node_version|
+          it_behaves_like :a_deploy_of_nodejs_app_to_cf, node_version, stack
+        end
 
-      node_versions.map { |node_version|
-        '~>' + /(\d+)\.(\d+)/.match(node_version)[0] + '.0'
-      }.uniq.each do |squiggle_version|
-        it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
+        node_versions.map { |node_version|
+          '~>' + /(\d+)\.(\d+)/.match(node_version)[0] + '.0'
+        }.uniq.each do |squiggle_version|
+          it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
+        end
       end
     end
   end
-end
 
-describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-  let(:stack)        { 'cflinuxfs2' }
-  let(:node_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
-  let(:app)          { deploy_app(node_version, stack) }
+  describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+    let(:stack)        { 'cflinuxfs2' }
+    let(:node_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
+    let(:app)          { deploy_app(node_version, stack) }
 
-  before do
-    cleanup_buildpack(buildpack: 'nodejs')
-    install_buildpack_with_uri_credentials(buildpack: 'nodejs')
-  end
+    before do
+      cleanup_buildpack(buildpack: 'nodejs')
+      install_buildpack_with_uri_credentials(buildpack: 'nodejs')
+    end
 
-  after { Machete::CF::DeleteApp.new.execute(app) }
+    after { Machete::CF::DeleteApp.new.execute(app) }
 
-  it 'does not include credentials in logged dependency uris' do
-    credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-    node_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/node/node-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+    it 'does not include credentials in logged dependency uris' do
+      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+      node_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/node/node-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
 
-    expect(app).to_not have_logged(credential_uri)
-    expect(app).to have_logged(node_uri)
+      expect(app).to_not have_logged(credential_uri)
+      expect(app).to have_logged(node_uri)
+    end
   end
 end

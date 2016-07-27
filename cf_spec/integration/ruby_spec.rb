@@ -82,39 +82,41 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
   end
 end
 
-describe 'For all supported Ruby versions', language: 'ruby' do
-  before(:all) do
-    cleanup_buildpack(buildpack: 'ruby')
-    install_buildpack(buildpack: 'ruby')
-  end
+describe 'For the ruby buildpack', language: 'ruby' do
+  describe 'For all supported Ruby versions' do
+    before(:all) do
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack(buildpack: 'ruby')
+    end
 
-  ['cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack", stack: stack do
-      ruby_versions = dependency_versions_in_manifest('ruby', 'ruby', stack)
-      ruby_versions.each do |ruby_version|
-        it_behaves_like :a_deploy_of_ruby_app_to_cf, ruby_version, stack
+    ['cflinuxfs2'].each do |stack|
+      context "on the #{stack} stack", stack: stack do
+        ruby_versions = dependency_versions_in_manifest('ruby', 'ruby', stack)
+        ruby_versions.each do |ruby_version|
+          it_behaves_like :a_deploy_of_ruby_app_to_cf, ruby_version, stack
+        end
       end
     end
   end
-end
 
-describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-  let(:stack)          { 'cflinuxfs2' }
-  let(:ruby_version) { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
-  let(:app)            { deploy_app(ruby_version, stack) }
+  describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:ruby_version) { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
+    let(:app)            { deploy_app(ruby_version, stack) }
 
-  before do
-    cleanup_buildpack(buildpack: 'ruby')
-    install_buildpack_with_uri_credentials(buildpack: 'ruby')
-  end
+    before do
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack_with_uri_credentials(buildpack: 'ruby')
+    end
 
-  after { Machete::CF::DeleteApp.new.execute(app) }
+    after { Machete::CF::DeleteApp.new.execute(app) }
 
-  it 'does not include credentials in logged dependency uris' do
-    credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-    ruby_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/ruby/ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+    it 'does not include credentials in logged dependency uris' do
+      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+      ruby_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/ruby/ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
 
-    expect(app).to_not have_logged(credential_uri)
-    expect(app).to have_logged(ruby_uri)
+      expect(app).to_not have_logged(credential_uri)
+      expect(app).to have_logged(ruby_uri)
+    end
   end
 end

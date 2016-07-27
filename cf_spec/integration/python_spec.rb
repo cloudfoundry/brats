@@ -61,39 +61,42 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   end
 end
 
-describe 'For all supported Python versions' do
-  before(:all) do
-    cleanup_buildpack(buildpack: 'python')
-    install_buildpack(buildpack: 'python')
-  end
 
-  ['cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack", stack: stack do
-      python_versions = dependency_versions_in_manifest('python', 'python', stack)
-      python_versions.each do |python_version|
-        it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack
+describe 'For the python buildpack', language: 'python' do
+  describe 'For all supported Python versions' do
+    before(:all) do
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack(buildpack: 'python')
+    end
+
+    ['cflinuxfs2'].each do |stack|
+      context "on the #{stack} stack", stack: stack do
+        python_versions = dependency_versions_in_manifest('python', 'python', stack)
+        python_versions.each do |python_version|
+          it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack
+        end
       end
     end
   end
-end
 
-describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-  let(:stack)          { 'cflinuxfs2' }
-  let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
-  let(:app)            { deploy_app(python_version, stack) }
+  describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+    let(:app)            { deploy_app(python_version, stack) }
 
-  before do
-    cleanup_buildpack(buildpack: 'python')
-    install_buildpack_with_uri_credentials(buildpack: 'python')
-  end
+    before do
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack_with_uri_credentials(buildpack: 'python')
+    end
 
-  after { Machete::CF::DeleteApp.new.execute(app) }
+    after { Machete::CF::DeleteApp.new.execute(app) }
 
-  it 'does not include credentials in logged dependency uris' do
-    credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-    python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+    it 'does not include credentials in logged dependency uris' do
+      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+      python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
 
-    expect(app).to_not have_logged(credential_uri)
-    expect(app).to have_logged(python_uri)
+      expect(app).to_not have_logged(credential_uri)
+      expect(app).to have_logged(python_uri)
+    end
   end
 end
