@@ -16,9 +16,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   context "with Python version #{python_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
-    before(:all) do
-      @app = deploy_app(python_version, stack)
-    end
+    before(:all) { @app = deploy_app(python_version, stack) }
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
@@ -89,7 +87,7 @@ describe 'staging with custom buildpack that uses credentials in manifest depend
     install_buildpack_with_uri_credentials(buildpack: 'python')
   end
 
-  after(:all) { Machete::CF::DeleteApp.new.execute(app) }
+  after { Machete::CF::DeleteApp.new.execute(app) }
 
   it 'does not include credentials in logged dependency uris' do
     credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
