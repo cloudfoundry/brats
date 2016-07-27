@@ -17,6 +17,11 @@ def parsed_manifest(buildpack:, branch: BRATS_BRANCH)
   YAML.load(open(manifest_url))
 end
 
+def dependency_versions_in_manifest(buildpack, dependency, stack)
+  dependencies = parsed_manifest(buildpack: buildpack).fetch('dependencies')
+  dependencies.select { |d| d['name'] == dependency && d['cf_stacks'].include?(stack) }.map {|dep| dep['version']}
+end
+
 def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do

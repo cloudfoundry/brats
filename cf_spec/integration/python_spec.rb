@@ -1,20 +1,23 @@
 require 'spec_helper'
 require 'bcrypt'
 
+def deploy_app(python_version, stack)
+  template = PythonTemplateApp.new(python_version)
+  template.generate!
+  Machete.deploy_app(
+    template.path,
+    name: template.name,
+    buildpack: 'python-brat-buildpack',
+    stack: stack
+  )
+end
+
 RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   context "with Python version #{python_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      @template = PythonTemplateApp.new(python_version)
-      @template.generate!
-
-      @app = Machete.deploy_app(
-        @template.path,
-        name: @template.name,
-        buildpack: 'python-brat-buildpack',
-        stack: stack
-      )
+      @app = deploy_app(python_version, stack)
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
@@ -57,46 +60,42 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
         expect(browser).to have_body 'Hello'
       end
     end
-
-    context 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-      before do
-        cleanup_buildpack(buildpack: 'python')
-        install_buildpack_with_uri_credentials(buildpack: 'python')
-        @app = Machete.deploy_app(
-          @template.path,
-          name: @template.name,
-          buildpack: 'python-brat-buildpack',
-          stack: stack
-        )
-      end
-
-      it 'does not include credentials in logged dependency uris' do
-        credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-        python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
-
-        expect(@app).to_not have_logged(credential_uri)
-        expect(@app).to have_logged(python_uri)
-      end
-    end
   end
 end
 
-describe 'For all supported Python versions', language: 'python' do
+describe 'For all supported Python versions' do
   before(:all) do
     cleanup_buildpack(buildpack: 'python')
     install_buildpack(buildpack: 'python')
   end
 
-  def self.dependencies
-    parsed_manifest(buildpack: 'python')
-      .fetch('dependencies')
-  end
-
   ['cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
-      dependencies.select { |d| d['name'] == 'python' && d['cf_stacks'].include?(stack) }.each do |dependency|
-        it_behaves_like :a_deploy_of_python_app_to_cf, dependency['version'], stack
+      python_versions = dependency_versions_in_manifest('python', 'python', stack)
+      python_versions.each do |python_version|
+        it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack
       end
     end
+  end
+end
+
+describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+  let(:stack)          { 'cflinuxfs2' }
+  let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+  let(:app)            { deploy_app(python_version, stack) }
+
+  before do
+    cleanup_buildpack(buildpack: 'python')
+    install_buildpack_with_uri_credentials(buildpack: 'python')
+  end
+
+  after(:all) { Machete::CF::DeleteApp.new.execute(app) }
+
+  it 'does not include credentials in logged dependency uris' do
+    credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+    python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+
+    expect(app).to_not have_logged(credential_uri)
+    expect(app).to have_logged(python_uri)
   end
 end
