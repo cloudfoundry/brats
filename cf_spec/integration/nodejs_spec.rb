@@ -1,25 +1,29 @@
 require 'spec_helper'
 
-RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_version, stack|
-  context "with node-#{node_version}", version: node_version do
-    before :all do
-      template = NodeJSTemplateApp.new(node_version)
-      template.generate!
+def deploy_app(node_version, stack)
+  template = NodeJSTemplateApp.new(node_version)
+  template.generate!
+  Machete.deploy_app(
+    template.path,
+    name: template.name,
+    buildpack: 'nodejs-brat-buildpack',
+    stack: stack
+  )
+end
 
-      @app = Machete.deploy_app(
-        template.path,
-        name: template.name,
-        buildpack: 'nodejs-brat-buildpack',
-        stack: stack
-      )
-      @browser = Machete::Browser.new(@app)
-    end
+RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_version, stack|
+  context "with node #{node_version}" do
+    let(:browser) { Machete::Browser.new(@app) }
+
+    before(:all) { @app = deploy_app(node_version, stack) }
+
+    after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
     it 'should be running' do
       expect(@app).to be_running
       2.times do
-        @browser.visit_path('/')
-        expect(@browser).to have_body('Hello World!')
+        browser.visit_path('/')
+        expect(browser).to have_body('Hello World!')
       end
     end
 
@@ -28,42 +32,30 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_versio
       expect(@app).to have_logged "engines.node (package.json):  #{node_version}"
       expect(@app).to have_logged /Downloading and installing node \d+\.\d+\.\d+/
     end
-
-    after :all do
-      Machete::CF::DeleteApp.new.execute(@app)
-    end
   end
 end
 
 RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
-  context "with node-#{node_version}", version: node_version do
-    before :all do
-      template = NodeJSTemplateApp.new(node_version)
-      template.generate!
+  context "with node #{node_version}", version: node_version do
+    let(:browser) { Machete::Browser.new(@app) }
 
-      @app = Machete.deploy_app(
-        template.path,
-        name: template.name,
-        buildpack: 'nodejs-brat-buildpack',
-        stack: stack
-      )
+    before(:all) { @app = deploy_app(node_version, stack) }
 
-      @browser = Machete::Browser.new(@app)
-    end
+    after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
     it 'should be running' do
       expect(@app).to be_running
       2.times do
-        @browser.visit_path('/')
-        expect(@browser).to have_body('Hello World!')
+        browser.visit_path('/')
+        expect(browser).to have_body('Hello World!')
       end
     end
 
     it 'supports bcrypt' do
       expect(@app).to be_running
       2.times do
-        @browser.visit_path('/bcrypt')
-        expect(@browser).to have_body('Hello Bcrypt!')
+        browser.visit_path('/bcrypt')
+        expect(browser).to have_body('Hello Bcrypt!')
       end
     end
 
@@ -73,18 +65,14 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
       it 'supports bson-ext' do
         expect(@app).to be_running
         2.times do
-          @browser.visit_path('/bson-ext')
-          expect(@browser).to have_body('Hello Bson-ext!')
+          browser.visit_path('/bson-ext')
+          expect(browser).to have_body('Hello Bson-ext!')
         end
       end
     end
 
     it 'should have the correct version' do
       expect(@app).to have_logged("Downloading and installing node #{node_version}")
-    end
-
-    after :all do
-      Machete::CF::DeleteApp.new.execute(@app)
     end
   end
 end
@@ -95,28 +83,41 @@ describe 'Deploying CF apps', language: 'nodejs' do
     install_buildpack(buildpack: 'nodejs')
   end
 
-  def self.nodes
-    parsed_manifest(buildpack: 'nodejs')
-      .fetch('dependencies')
-      .select { |d| d['name'] == 'node' }
-  end
-
   ['cflinuxfs2'].each do |stack|
     context "on the #{stack} stack", stack: stack do
-      all_versions = nodes.select { |node|
-        node['cf_stacks'].include?(stack) &&
-        Gem::Version.new(node['version']) >= Gem::Version.new('0.10')
-      }
-      all_versions.each do |node|
-        it_behaves_like :a_deploy_of_nodejs_app_to_cf, node['version'], stack
+
+      node_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
+
+      node_versions.each do |node_version|
+        it_behaves_like :a_deploy_of_nodejs_app_to_cf, node_version, stack
       end
 
-      all_versions.map { |node|
-        version = node['version']
-        '~>' + /(\d+)\.(\d+)/.match(version)[0] + '.0'
+      node_versions.map { |node_version|
+        '~>' + /(\d+)\.(\d+)/.match(node_version)[0] + '.0'
       }.uniq.each do |squiggle_version|
         it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
       end
     end
+  end
+end
+
+describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+  let(:stack)        { 'cflinuxfs2' }
+  let(:node_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
+  let(:app)          { deploy_app(node_version, stack) }
+
+  before do
+    cleanup_buildpack(buildpack: 'nodejs')
+    install_buildpack_with_uri_credentials(buildpack: 'nodejs')
+  end
+
+  after { Machete::CF::DeleteApp.new.execute(app) }
+
+  it 'does not include credentials in logged dependency uris' do
+    credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+    node_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/node/node-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+
+    expect(app).to_not have_logged(credential_uri)
+    expect(app).to have_logged(node_uri)
   end
 end
