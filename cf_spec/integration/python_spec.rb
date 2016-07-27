@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'bcrypt'
 
-def deploy_app(python_version, stack)
+def deploy_python_app(python_version, stack)
   template = PythonTemplateApp.new(python_version)
   template.generate!
   Machete.deploy_app(
@@ -16,7 +16,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   context "with Python version #{python_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
-    before(:all) { @app = deploy_app(python_version, stack) }
+    before(:all) { @app = deploy_python_app(python_version, stack) }
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
@@ -82,7 +82,7 @@ describe 'For the python buildpack', language: 'python' do
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
-    let(:app)            { deploy_app(python_version, stack) }
+    let(:app)            { deploy_python_app(python_version, stack) }
 
     before do
       cleanup_buildpack(buildpack: 'python')

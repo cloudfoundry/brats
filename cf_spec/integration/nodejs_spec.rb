@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-def deploy_app(node_version, stack)
+def deploy_nodejs_app(node_version, stack)
   template = NodeJSTemplateApp.new(node_version)
   template.generate!
   Machete.deploy_app(
@@ -15,7 +15,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |node_versio
   context "with node #{node_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
-    before(:all) { @app = deploy_app(node_version, stack) }
+    before(:all) { @app = deploy_nodejs_app(node_version, stack) }
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
@@ -39,7 +39,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |node_version, stack|
   context "with node #{node_version}", version: node_version do
     let(:browser) { Machete::Browser.new(@app) }
 
-    before(:all) { @app = deploy_app(node_version, stack) }
+    before(:all) { @app = deploy_nodejs_app(node_version, stack) }
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
@@ -105,7 +105,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)        { 'cflinuxfs2' }
     let(:node_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
-    let(:app)          { deploy_app(node_version, stack) }
+    let(:app)          { deploy_nodejs_app(node_version, stack) }
 
     before do
       cleanup_buildpack(buildpack: 'nodejs')

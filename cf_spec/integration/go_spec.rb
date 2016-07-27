@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-def deploy_app(go_version, stack)
+def deploy_go_app(go_version, stack)
   template = GoTemplateApp.new(go_version)
   template.generate!
 
@@ -17,7 +17,7 @@ RSpec.shared_examples :a_deploy_of_go_app_to_cf do |go_version, stack|
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      @app = deploy_app(go_version, stack)
+      @app = deploy_go_app(go_version, stack)
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }

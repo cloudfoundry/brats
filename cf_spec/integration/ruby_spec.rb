@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'bcrypt'
 
-def deploy_app(ruby_version, stack)
+def deploy_ruby_app(ruby_version, stack)
   template = RubyTemplateApp.new(ruby_version)
   template.generate!
 
@@ -18,7 +18,7 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      @app = deploy_app(ruby_version, stack)
+      @app = deploy_ruby_app(ruby_version, stack)
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
@@ -100,9 +100,9 @@ describe 'For the ruby buildpack', language: 'ruby' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)          { 'cflinuxfs2' }
+    let(:stack)        { 'cflinuxfs2' }
     let(:ruby_version) { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
-    let(:app)            { deploy_app(ruby_version, stack) }
+    let(:app)          { deploy_ruby_app(ruby_version, stack) }
 
     before do
       cleanup_buildpack(buildpack: 'ruby')
