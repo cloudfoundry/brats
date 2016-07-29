@@ -29,7 +29,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
   end
 
@@ -50,7 +50,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
   end
 
@@ -76,7 +76,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
   end
 
@@ -97,7 +97,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
   end
 
@@ -115,7 +115,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
 
   end
@@ -137,7 +137,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
   end
 
@@ -154,7 +154,7 @@ RSpec.describe 'When testing for safeness of a buildpack' do
       )
 
       expect(@app).to be_running
-      expect(template.name).to be_safe
+      expect(template.name).to keep_credentials_out_of_droplet
     end
   end
 end

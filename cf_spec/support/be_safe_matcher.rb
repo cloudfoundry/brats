@@ -2,14 +2,14 @@ require 'json'
 require 'shellwords'
 require 'tmpdir'
 
-RSpec::Matchers.define :be_safe do
+RSpec::Matchers.define :keep_credentials_out_of_droplet do
   match do |app_name|
     @output = inspect_app(app_name)
     @output.empty?
   end
 
   failure_message do |app_name|
-    "expected #{app_name} to be safe, it was not\n" +
+    "expected #{app_name} to not write credentials to droplet, it does\n" +
     "output from failure:\n" +
     @output
   end
