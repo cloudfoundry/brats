@@ -80,23 +80,27 @@ describe 'For the python buildpack', language: 'python' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)          { 'cflinuxfs2' }
-    let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
-    let(:app)            { deploy_python_app(python_version, stack) }
+    [:uncached].each do |caching|
+      context "using a #{caching} buildpack" do
+        let(:stack) { 'cflinuxfs2' }
+        let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+        let(:app) { deploy_python_app(python_version, stack) }
 
-    before do
-      cleanup_buildpack(buildpack: 'python')
-      install_buildpack_with_uri_credentials(buildpack: 'python')
-    end
+        before do
+          cleanup_buildpack(buildpack: 'python')
+          install_buildpack_with_uri_credentials(buildpack: 'python')
+        end
 
-    after { Machete::CF::DeleteApp.new.execute(app) }
+        after { Machete::CF::DeleteApp.new.execute(app) }
 
-    it 'does not include credentials in logged dependency uris' do
-      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-      python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+        it 'does not include credentials in logged dependency uris' do
+          credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+          python_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
 
-      expect(app).to_not have_logged(credential_uri)
-      expect(app).to have_logged(python_uri)
+          expect(app).to_not have_logged(credential_uri)
+          expect(app).to have_logged(python_uri)
+        end
+      end
     end
   end
 end

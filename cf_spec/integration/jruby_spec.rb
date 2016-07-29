@@ -106,29 +106,33 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)                { 'cflinuxfs2' }
-    let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
-    let(:app) do
-      jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
-      ruby_version = $1
-      jruby_version = $2
-      deploy_jruby_app(ruby_version,jruby_version,stack)
-    end
+    [:uncached].each do |caching|
+      context "using a #{caching} buildpack" do
+        let(:stack) { 'cflinuxfs2' }
+        let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
+        let(:app) do
+          jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
+          ruby_version = $1
+          jruby_version = $2
+          deploy_jruby_app(ruby_version, jruby_version, stack)
+        end
 
-    before do
-      cleanup_buildpack(buildpack: 'ruby')
-      install_buildpack_with_uri_credentials(buildpack: 'ruby')
-    end
+        before do
+          cleanup_buildpack(buildpack: 'ruby')
+          install_buildpack_with_uri_credentials(buildpack: 'ruby', buildpack_caching: caching)
+        end
 
-    after { Machete::CF::DeleteApp.new.execute(app) }
+        after { Machete::CF::DeleteApp.new.execute(app) }
 
-    it 'does not include credentials in logged dependency uris' do
-      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-      jruby_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/jruby/jruby-') + '[\d\.]+' +
-                             Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+        it 'does not include credentials in logged dependency uris' do
+          credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+          jruby_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/jruby/jruby-') + '[\d\.]+' +
+                                     Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
 
-      expect(app).to_not have_logged(credential_uri)
-      expect(app).to have_logged(jruby_uri)
+          expect(app).to_not have_logged(credential_uri)
+          expect(app).to have_logged(jruby_uri)
+        end
+      end
     end
   end
 end

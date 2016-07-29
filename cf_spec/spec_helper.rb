@@ -41,7 +41,11 @@ def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
   end
 end
 
-def install_buildpack_with_uri_credentials(buildpack:, branch: BRATS_BRANCH, position: 100)
+def install_buildpack_with_uri_credentials(buildpack:, branch: BRATS_BRANCH, position: 100, buildpack_caching: :uncached)
+
+  available_packager_options = { cached: 'cached', uncached: 'uncached' }
+  packager_option = available_packager_options[buildpack_caching]
+
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
     system(<<-EOF)
@@ -58,7 +62,7 @@ def install_buildpack_with_uri_credentials(buildpack:, branch: BRATS_BRANCH, pos
       cd tmp/#{buildpack}-buildpack
       export BUNDLE_GEMFILE=cf.Gemfile
       bundle install
-      bundle exec buildpack-packager --uncached || bundle exec buildpack-packager uncached
+      bundle exec buildpack-packager --#{packager_option} || bundle exec buildpack-packager #{packager_option}
       cf delete-buildpack #{buildpack}-brat-buildpack -f
       cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
 

@@ -100,23 +100,28 @@ describe 'For the ruby buildpack', language: 'ruby' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)        { 'cflinuxfs2' }
-    let(:ruby_version) { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
-    let(:app)          { deploy_ruby_app(ruby_version, stack) }
+    [:uncached].each do |caching|
+      context "using a #{caching} buildpack" do
 
-    before do
-      cleanup_buildpack(buildpack: 'ruby')
-      install_buildpack_with_uri_credentials(buildpack: 'ruby')
-    end
+        let(:stack) { 'cflinuxfs2' }
+        let(:ruby_version) { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
+        let(:app) { deploy_ruby_app(ruby_version, stack) }
 
-    after { Machete::CF::DeleteApp.new.execute(app) }
+        before do
+          cleanup_buildpack(buildpack: 'ruby')
+          install_buildpack_with_uri_credentials(buildpack: 'ruby', buildpack_caching: caching)
+        end
 
-    it 'does not include credentials in logged dependency uris' do
-      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-      ruby_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/ruby/ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+        after { Machete::CF::DeleteApp.new.execute(app) }
 
-      expect(app).to_not have_logged(credential_uri)
-      expect(app).to have_logged(ruby_uri)
+        it 'does not include credentials in logged dependency uris' do
+          credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+          ruby_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/ruby/ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+
+          expect(app).to_not have_logged(credential_uri)
+          expect(app).to have_logged(ruby_uri)
+        end
+      end
     end
   end
 end

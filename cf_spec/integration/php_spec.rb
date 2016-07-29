@@ -83,30 +83,34 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)       { 'cflinuxfs2' }
-    let(:php_version) { dependency_versions_in_manifest('php', 'php', stack).last }
-    let(:app) do
-      nginx_version = dependency_versions_in_manifest('php', 'nginx',stack).last
-      deploy_php_app(php_version, stack, 'nginx', nginx_version).first
-    end
+    [:uncached].each do |caching|
+      context "using a #{caching} buildpack" do
+        let(:stack) { 'cflinuxfs2' }
+        let(:php_version) { dependency_versions_in_manifest('php', 'php', stack).last }
+        let(:app) do
+          nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
+          deploy_php_app(php_version, stack, 'nginx', nginx_version).first
+        end
 
-    before do
-      cleanup_buildpack(buildpack: 'php')
-      install_buildpack_with_uri_credentials(buildpack: 'php')
-    end
+        before do
+          cleanup_buildpack(buildpack: 'php')
+          install_buildpack_with_uri_credentials(buildpack: 'php', buildpack_caching: caching)
+        end
 
-    after { Machete::CF::DeleteApp.new.execute(app) }
+        after { Machete::CF::DeleteApp.new.execute(app) }
 
-    it 'does not include credentials in logged dependency uris' do
-      credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+        it 'does not include credentials in logged dependency uris' do
+          credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
 
-      major_version = php_version.split(".").first
-      php_in_uri = major_version == '7' ? 'php7' : 'php'
+          major_version = php_version.split(".").first
+          php_in_uri = major_version == '7' ? 'php7' : 'php'
 
-      php_uri = Regexp.new(Regexp.quote("https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/#{php_in_uri}/#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\d]+\.tgz')
+          php_uri = Regexp.new(Regexp.quote("https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/#{php_in_uri}/#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\d]+\.tgz')
 
-      expect(app).to_not have_logged(credential_uri)
-      expect(app).to have_logged(php_uri)
+          expect(app).to_not have_logged(credential_uri)
+          expect(app).to have_logged(php_uri)
+        end
+      end
     end
   end
 end
