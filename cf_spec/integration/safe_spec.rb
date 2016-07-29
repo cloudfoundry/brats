@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe 'When testing for safeness of a buildpack' do
+RSpec.describe 'during staging' do
   before do
     cleanup_buildpack(buildpack: buildpack_name)
     if buildpack_name == 'java'
@@ -12,10 +12,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
 
   after { Machete::CF::DeleteApp.new.execute(@app) }
 
-  context 'a Python app' do
+  context 'the Python buildpack', language: 'python' do
     let(:buildpack_name) { 'python' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       manifest     = parsed_manifest(buildpack: buildpack_name)
       python_version = manifest['dependencies'].find{ |d| d['name'] == 'python' }['version']
 
@@ -33,10 +33,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
     end
   end
 
-  context 'a golang app' do
+  context 'the Go buildpack', language: 'go' do
     let(:buildpack_name) { 'go' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       manifest     = parsed_manifest(buildpack: buildpack_name)
       go_version = manifest['dependencies'].find{ |d| d['name'] == 'go' }['version']
 
@@ -54,10 +54,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
     end
   end
 
-  context 'a PHP app' do
+  context 'the PHP buildpack', language: 'php' do
     let(:buildpack_name) { 'php' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       manifest     = parsed_manifest(buildpack: buildpack_name)
       php_version = manifest['dependencies'].find{ |d| d['name'] == 'php' }['version']
       nginx_version = manifest['dependencies'].find{ |d| d['name'] == 'nginx' }['version']
@@ -80,10 +80,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
     end
   end
 
-  context 'a nodeJS app' do
+  context 'the NodeJS buildpack', language: 'nodejs' do
     let(:buildpack_name) { 'nodejs' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       manifest     = parsed_manifest(buildpack: buildpack_name)
       nodejs_version = manifest['dependencies'].find{ |d| d['name'] == 'node' }['version']
 
@@ -101,10 +101,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
     end
   end
 
-  context 'a staticfile app' do
+  context 'the Staticfile buildpack', language: 'staticfile' do
     let(:buildpack_name) { 'staticfile' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       template = StaticfileTemplateApp.new
       template.generate!
 
@@ -120,10 +120,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
 
   end
 
-  context 'a Ruby app' do
+  context 'the Ruby buildpack', language: 'ruby' do
     let(:buildpack_name) { 'ruby' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       manifest     = parsed_manifest(buildpack: buildpack_name)
       ruby_version = manifest['dependencies'].find{ |d| d['name'] == 'ruby' }['version']
 
@@ -141,10 +141,10 @@ RSpec.describe 'When testing for safeness of a buildpack' do
     end
   end
 
-  context 'a Java app' do
+  context 'the Java buildpack', language: 'java' do
     let(:buildpack_name) { 'java' }
 
-    it 'will be safe' do
+    it 'will not write credentials to the app droplet' do
       template = JavaTemplateApp.new
 
       @app = Machete.deploy_app(
