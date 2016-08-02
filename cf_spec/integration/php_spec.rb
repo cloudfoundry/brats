@@ -83,33 +83,41 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    [:uncached].each do |caching|
-      context "using a #{caching} buildpack" do
-        let(:stack) { 'cflinuxfs2' }
-        let(:php_version) { dependency_versions_in_manifest('php', 'php', stack).last }
-        let(:app) do
-          nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
-          deploy_php_app(php_version, stack, 'nginx', nginx_version).first
-        end
+    let(:stack)       { 'cflinuxfs2' }
+    let(:php_version) { dependency_versions_in_manifest('php', 'php', stack).last }
+    let(:major_version)  { php_version.split(".").first }
+    let(:php_in_uri)     { major_version == '7' ? 'php7' : 'php' }
+    let(:app) do
+      nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
+      deploy_php_app(php_version, stack, 'nginx', nginx_version).first
+    end
 
-        before do
-          cleanup_buildpack(buildpack: 'php')
-          install_buildpack_with_uri_credentials(buildpack: 'php', buildpack_caching: caching)
-        end
+    before do
+      cleanup_buildpack(buildpack: 'php')
+      install_buildpack_with_uri_credentials(buildpack: 'php', buildpack_caching: caching)
+    end
 
-        after { Machete::CF::DeleteApp.new.execute(app) }
+    after { Machete::CF::DeleteApp.new.execute(app) }
 
-        it 'does not include credentials in logged dependency uris' do
-          credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+      let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
+      let(:php_uri)        { Regexp.new(Regexp.quote("https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/#{php_in_uri}/#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\d]+\.tgz') }
 
-          major_version = php_version.split(".").first
-          php_in_uri = major_version == '7' ? 'php7' : 'php'
+      it 'does not include credentials in logged dependency uris' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(php_uri)
+      end
+    end
 
-          php_uri = Regexp.new(Regexp.quote("https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/#{php_in_uri}/#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\d]+\.tgz')
+    context "using a cached buildpack" do
+      let(:caching)        { :cached }
+      let(:credential_uri) { Regexp.new('https___login_password') }
+      let(:php_uri)       { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_concourse-binaries_#{php_in_uri}_#{php_in_uri}-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz') + '[\d]+\.tgz') }
 
-          expect(app).to_not have_logged(credential_uri)
+      it 'does not include credentials in logged dependency file paths' do
+        expect(app).to_not have_logged(credential_uri)
           expect(app).to have_logged(php_uri)
-        end
       end
     end
   end

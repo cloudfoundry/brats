@@ -103,26 +103,36 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    [:uncached].each do |caching|
-      context "using a #{caching} buildpack" do
-        let(:stack) { 'cflinuxfs2' }
-        let(:node_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
-        let(:app) { deploy_nodejs_app(node_version, stack) }
+    let(:stack)        { 'cflinuxfs2' }
+    let(:node_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
+    let(:app)          { deploy_nodejs_app(node_version, stack) }
 
-        before do
-          cleanup_buildpack(buildpack: 'nodejs')
-          install_buildpack_with_uri_credentials(buildpack: 'nodejs', buildpack_caching: caching)
-        end
+    before do
+      cleanup_buildpack(buildpack: 'nodejs')
+      install_buildpack_with_uri_credentials(buildpack: 'nodejs', buildpack_caching: caching)
+    end
 
-        after { Machete::CF::DeleteApp.new.execute(app) }
+    after { Machete::CF::DeleteApp.new.execute(app) }
 
-        it 'does not include credentials in logged dependency uris' do
-          credential_uri = Regexp.new(Regexp.quote('https://') + 'login:password[@]')
-          node_uri = Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/node/node-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz'))
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+      let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
+      let(:node_uri)       { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/node/node-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
 
-          expect(app).to_not have_logged(credential_uri)
-          expect(app).to have_logged(node_uri)
-        end
+      it 'does not include credentials in logged dependency uris' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(node_uri)
+      end
+    end
+
+    context "using a cached buildpack" do
+      let(:caching)        { :cached }
+      let(:credential_uri) { Regexp.new('https___login_password') }
+      let(:node_uri)       { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_concourse-binaries_node_node-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
+
+      it 'does not include credentials in logged dependency file paths' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(node_uri)
       end
     end
   end

@@ -42,7 +42,6 @@ def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
 end
 
 def install_buildpack_with_uri_credentials(buildpack:, branch: BRATS_BRANCH, position: 100, buildpack_caching: :uncached)
-
   available_packager_options = { cached: 'cached', uncached: 'uncached' }
   packager_option = available_packager_options[buildpack_caching]
 
