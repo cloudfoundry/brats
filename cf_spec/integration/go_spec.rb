@@ -52,4 +52,39 @@ describe 'For all supported Go versions', language: 'go' do
       end
     end
   end
+
+  describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:go_version)   { dependency_versions_in_manifest('go', 'go', stack).last }
+    let(:app)            { deploy_go_app(go_version, stack) }
+
+    before do
+      cleanup_buildpack(buildpack: 'go')
+      install_buildpack_with_uri_credentials(buildpack: 'go', buildpack_caching: caching)
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+      let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
+      let(:go_uri)       { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/go/go') + '[\d\.]+' + Regexp.quote('.linux-amd64.tar.gz')) }
+
+      it 'does not include credentials in logged dependency uris' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(go_uri)
+      end
+    end
+
+    context "using a cached buildpack" do
+      let(:caching)        { :cached }
+      let(:credential_uri) { Regexp.new('https___login_password') }
+      let(:go_uri)       { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_concourse-binaries_go_go') + '[\d\.]+' + Regexp.quote('.linux-amd64.tar.gz')) }
+
+      it 'does not include credentials in logged dependency file paths' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(go_uri)
+      end
+    end
+  end
 end
