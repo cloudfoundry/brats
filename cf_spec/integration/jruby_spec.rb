@@ -1,25 +1,19 @@
 require 'spec_helper'
 require 'bcrypt'
 
-def deploy_jruby_app(ruby_version,jruby_version,stack)
-  template = JRubyTemplateApp.new(ruby_version,jruby_version)
+def generate_jruby_app(ruby_version, jruby_version)
+  template = JRubyTemplateApp.new(ruby_version, jruby_version)
   template.generate!
-
-  Machete.deploy_app(
-    template.path,
-    name: template.name,
-    buildpack: 'ruby-brat-buildpack',
-    stack: stack
-  )
+  template
 end
-
 
 RSpec.shared_examples :a_deploy_of_jruby_app_to_cf do |ruby_version, jruby_version, stack|
   context "with JRuby version #{jruby_version} and Ruby version #{ruby_version}", version: ruby_version do
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      @app = deploy_jruby_app(ruby_version, jruby_version, stack)
+      app_template = generate_jruby_app(ruby_version, jruby_version)
+      @app = deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
@@ -112,7 +106,8 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
       jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
       ruby_version = $1
       jruby_version = $2
-      deploy_jruby_app(ruby_version, jruby_version, stack)
+      app_template = generate_jruby_app(ruby_version, jruby_version)
+      @app = deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
     end
 
     before do
@@ -144,6 +139,31 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
         expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(jruby_uri)
       end
+    end
+  end
+
+  describe 'deploying an app that has an executable .profile script' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
+    let(:app) do
+      jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
+      ruby_version = $1
+      jruby_version = $2
+      app_template = generate_jruby_app(ruby_version, jruby_version)
+      add_dot_profile_script_to_app(app_template.full_path)
+      deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
+    end
+
+    before(:all) do
+      skip_if_no_dot_profile_support_on_targeted_cf
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack(buildpack: 'ruby')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'executes the .profile script' do
+      expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
     end
   end
 end

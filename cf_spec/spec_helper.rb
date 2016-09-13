@@ -42,7 +42,7 @@ def add_dot_profile_script_to_app(template_path)
   end
 end
 
-def deploy_app(template: template, stack: stack, buildpack: buildpack)
+def deploy_app(template:, stack:, buildpack:)
   Machete.deploy_app(
     template.path,
     name: template.name,

@@ -1,6 +1,5 @@
 class JRubyTemplateApp
-  attr_reader :ruby_version
-  attr_reader :engine_version
+  attr_reader :ruby_version, :engine_version, :full_path
 
   def initialize(ruby_version, engine_version)
     @ruby_version = ruby_version
@@ -22,6 +21,7 @@ class JRubyTemplateApp
   def generate_app(app_name, ruby_version, engine, engine_version)
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'jruby', app_name)
     copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'jruby', 'tmp', ruby_version, app_name)
+    @full_path = File.expand_path(copied_template_path)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)
