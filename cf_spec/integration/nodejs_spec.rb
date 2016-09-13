@@ -162,5 +162,4 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
     end
   end
-
 end

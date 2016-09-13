@@ -1,5 +1,5 @@
 class PythonTemplateApp
-  attr_reader :python_version
+  attr_reader :python_version, :full_path
 
   def initialize(python_version)
     @python_version = python_version
@@ -20,6 +20,7 @@ class PythonTemplateApp
   def generate_app(app_name, version)
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'python', app_name)
     copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'python', 'tmp', version.to_s, app_name)
+    @full_path = File.expand_path(copied_template_path)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)

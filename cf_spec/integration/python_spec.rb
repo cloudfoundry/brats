@@ -1,22 +1,20 @@
 require 'spec_helper'
 require 'bcrypt'
 
-def deploy_python_app(python_version, stack)
+def generate_python_app(python_version)
   template = PythonTemplateApp.new(python_version)
   template.generate!
-  Machete.deploy_app(
-    template.path,
-    name: template.name,
-    buildpack: 'python-brat-buildpack',
-    stack: stack
-  )
+  template
 end
 
 RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   context "with Python version #{python_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
-    before(:all) { @app = deploy_python_app(python_version, stack) }
+    before(:all) do
+      app_template = generate_python_app(python_version)
+      @app = deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
@@ -82,7 +80,10 @@ describe 'For the python buildpack', language: 'python' do
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
-    let(:app)            { deploy_python_app(python_version, stack) }
+    let(:app) do
+      app_template = generate_python_app(python_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
 
     before do
       cleanup_buildpack(buildpack: 'python')
@@ -94,7 +95,7 @@ describe 'For the python buildpack', language: 'python' do
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
       let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:python_uri)       { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
+      let(:python_uri)     { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
@@ -111,6 +112,28 @@ describe 'For the python buildpack', language: 'python' do
         expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(python_uri)
       end
+    end
+  end
+
+  describe 'deploying an app that has an executable .profile script' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+    let(:app) do
+      app_template = generate_python_app(python_version)
+      add_dot_profile_script_to_app(app_template.full_path)
+      deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
+
+    before(:all) do
+      skip_if_no_dot_profile_support_on_targeted_cf
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack(buildpack: 'python')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'executes the .profile script' do
+      expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
     end
   end
 end
