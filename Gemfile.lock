@@ -1,9 +1,10 @@
 GIT
   remote: https://github.com/cf-buildpacks/machete
-  revision: 0af3cf9cc645c48317a061ec50bd4b4bb2ac85ce
-  tag: v0.0.30
+  revision: 0a96cf194aba38b6c39a4c83ee619a63144711c8
+  tag: v0.0.48
   specs:
-    machete (0.0.30)
+    machete (0.0.48)
+      childprocess
       httparty
 
 GIT
@@ -27,10 +28,12 @@ GEM
       tzinfo (~> 1.1)
     ast (2.3.0)
     bcrypt (3.1.11)
+    childprocess (0.5.9)
+      ffi (~> 1.0, >= 1.0.11)
     coderay (1.1.1)
     diff-lcs (1.2.5)
-    httparty (0.13.7)
-      json (~> 1.8)
+    ffi (1.9.14)
+    httparty (0.14.0)
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
     json (1.8.3)
@@ -94,4 +97,4 @@ RUBY VERSION
    ruby 2.3.1p112
 
 BUNDLED WITH
-   1.12.5
+   1.13.1
