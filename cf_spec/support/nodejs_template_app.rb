@@ -1,5 +1,5 @@
 class NodeJSTemplateApp
-  attr_reader :nodejs_version
+  attr_reader :nodejs_version, :full_path
 
   def initialize(nodejs_version)
     @nodejs_version = nodejs_version
@@ -16,6 +16,7 @@ class NodeJSTemplateApp
   def generate!
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'nodejs', 'simple_brats')
     copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'nodejs', 'tmp', nodejs_version.to_s, 'simple_brats')
+    @full_path = File.expand_path(copied_template_path)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)
