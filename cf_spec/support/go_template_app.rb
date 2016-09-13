@@ -1,5 +1,5 @@
 class GoTemplateApp
-  attr_reader :go_version
+  attr_reader :go_version, :full_path
 
   def initialize(go_version)
     @go_version = go_version
@@ -20,6 +20,7 @@ class GoTemplateApp
   def generate_app(app_name, version)
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'src', app_name)
     copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'go', 'tmp', version.to_s, 'src', app_name)
+    @full_path = File.expand_path(copied_template_path)
     FileUtils.rm_rf(copied_template_path)
     FileUtils.mkdir_p(File.dirname(copied_template_path))
     FileUtils.cp_r(origin_template_path, copied_template_path)

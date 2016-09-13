@@ -22,6 +22,35 @@ def dependency_versions_in_manifest(buildpack, dependency, stack)
   dependencies.select { |d| d['name'] == dependency && d['cf_stacks'].include?(stack) }.map {|dep| dep['version']}
 end
 
+def skip_if_no_dot_profile_support_on_targeted_cf
+  minimum_acceptable_cf_api_version = '2.57.0'
+  skip_reason = ".profile script functionality not supported before CF API version #{minimum_acceptable_cf_api_version}"
+  Machete::RSpecHelpers.skip_if_cf_api_below(version: minimum_acceptable_cf_api_version, reason: skip_reason)
+end
+
+def add_dot_profile_script_to_app(template_path)
+  profile_path = File.join(template_path, '.profile')
+  File.open(profile_path, 'w') do |file|
+    file.write( <<~BASHCODE
+                   #!/usr/bin/env bash
+
+                   echo PROFILE_SCRIPT_IS_PRESENT_AND_RAN
+
+                   BASHCODE
+)
+    file.chmod(0755)
+  end
+end
+
+def deploy_app(template: template, stack: stack, buildpack: buildpack)
+  Machete.deploy_app(
+    template.path,
+    name: template.name,
+    buildpack: buildpack,
+    stack: stack
+  )
+end
+
 def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
