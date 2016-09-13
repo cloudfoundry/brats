@@ -1,18 +1,17 @@
 require 'spec_helper'
 
-def deploy_php_app(php_version, stack, web_server, web_server_version)
+def generate_php_app(php_version, web_server, web_server_version)
   template = PHPTemplateApp.new(
     runtime_version: php_version,
     web_server: web_server,
     web_server_version: web_server_version
   )
-  template.generate!
-  [Machete.deploy_app(
-    template.path,
-    name: template.name,
-    buildpack: 'php-brat-buildpack',
-    stack: stack
-  ), template.options]
+  template
+end
+
+def deploy_php_app(app_template, stack)
+  app = deploy_app(template: app_template, stack: stack, buildpack: 'php-brat-buildpack')
+  [app, app_template.options]
 end
 
 RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_binary, stack|
@@ -22,7 +21,10 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_bin
   context "with php-#{php_version} and web_server: #{web_server}-#{web_server_version}", version: php_version do
     let(:browser) { Machete::Browser.new(@app) }
 
-    before(:all) { @app, @options = deploy_php_app(php_version, stack, web_server, web_server_version) }
+    before(:all) do
+      app_template = generate_php_app(php_version, web_server, web_server_version)
+      @app = deploy_php_app(app_template, stack)
+    end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
@@ -90,7 +92,8 @@ describe 'For the php buildpack', language: 'php' do
 
     let(:app) do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
-      deploy_php_app(php_version, stack, 'nginx', nginx_version).first
+      app_template = generate_php_app(php_version, 'nginx', nginx_version)
+      deploy_php_app(app_template, stack).first
     end
 
     before do
@@ -122,4 +125,27 @@ describe 'For the php buildpack', language: 'php' do
       end
     end
   end
+
+  describe 'deploying an app that has an executable .profile script' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
+    let(:app) do
+      nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
+      app_template = generate_php_app(php_version, 'nginx', nginx_version)
+      deploy_php_app(app_template, stack).first
+    end
+
+    before(:all) do
+      skip_if_no_dot_profile_support_on_targeted_cf
+      cleanup_buildpack(buildpack: 'php')
+      install_buildpack(buildpack: 'php')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'executes the .profile script' do
+      expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
+    end
+  end
+
 end
