@@ -139,7 +139,7 @@ describe 'For the python buildpack', language: 'python' do
 
     it 'does not let me view the .profile script' do
       browser.visit_path('/.profile')
-      expect(browser.status).to eq(404)
+      expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
 end
