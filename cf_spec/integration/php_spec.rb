@@ -136,6 +136,7 @@ describe 'For the php buildpack', language: 'php' do
       add_dot_profile_script_to_app(app_template.full_path)
       deploy_php_app(app_template, stack).first
     end
+    let(:browser) { Machete::Browser.new(app) }
 
     before(:all) do
       skip_if_no_dot_profile_support_on_targeted_cf
@@ -148,6 +149,10 @@ describe 'For the php buildpack', language: 'php' do
     it 'executes the .profile script' do
       expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
     end
-  end
 
+    it 'does not let me view the .profile script' do
+      browser.visit_path('/.profile')
+      expect(browser.status).to eq(404)
+    end
+  end
 end

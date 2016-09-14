@@ -93,6 +93,7 @@ describe 'For all supported Go versions', language: 'go' do
       add_dot_profile_script_to_app(app_template.full_path)
       deploy_app(template: app_template, stack: stack, buildpack: 'go-brat-buildpack')
     end
+    let(:browser) { Machete::Browser.new(app) }
 
     before(:all) do
       skip_if_no_dot_profile_support_on_targeted_cf
@@ -104,6 +105,11 @@ describe 'For all supported Go versions', language: 'go' do
 
     it 'executes the .profile script' do
       expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
+    end
+
+    it 'does not let me view the .profile script' do
+      browser.visit_path('/.profile')
+      expect(browser.status).to eq(404)
     end
   end
 end
