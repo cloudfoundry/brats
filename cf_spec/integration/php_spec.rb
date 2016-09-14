@@ -10,11 +10,6 @@ def generate_php_app(php_version, web_server, web_server_version)
   template
 end
 
-def deploy_php_app(app_template, stack)
-  app = deploy_app(template: app_template, stack: stack, buildpack: 'php-brat-buildpack')
-  [app, app_template.options]
-end
-
 RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_binary, stack|
   web_server         = web_server_binary['name']
   web_server_version = web_server_binary['version']
@@ -24,7 +19,7 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_bin
 
     before(:all) do
       app_template = generate_php_app(php_version, web_server, web_server_version)
-      @app = deploy_php_app(app_template, stack)
+      @app = deploy_app(template: app_template, stack: stack, buildpack: 'php-brat-buildpack')
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
@@ -94,7 +89,7 @@ describe 'For the php buildpack', language: 'php' do
     let(:app) do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
       app_template = generate_php_app(php_version, 'nginx', nginx_version)
-      deploy_php_app(app_template, stack).first
+      deploy_app(template: app_template, stack: stack, buildpack: 'php-brat-buildpack')
     end
 
     before do
@@ -134,7 +129,7 @@ describe 'For the php buildpack', language: 'php' do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
       app_template = generate_php_app(php_version, 'nginx', nginx_version)
       add_dot_profile_script_to_app(app_template.full_path)
-      deploy_php_app(app_template, stack).first
+      deploy_app(template: app_template, stack: stack, buildpack: 'php-brat-buildpack')
     end
 
     before(:all) do
