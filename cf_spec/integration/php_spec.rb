@@ -24,7 +24,7 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_bin
 
     before(:all) do
       app_template = generate_php_app(php_version, web_server, web_server_version)
-      @app = deploy_php_app(app_template, stack)
+      @app, @options = deploy_php_app(app_template, stack)
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
