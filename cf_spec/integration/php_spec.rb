@@ -6,6 +6,7 @@ def generate_php_app(php_version, web_server, web_server_version)
     web_server: web_server,
     web_server_version: web_server_version
   )
+  template.generate!
   template
 end
 
@@ -132,6 +133,7 @@ describe 'For the php buildpack', language: 'php' do
     let(:app) do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
       app_template = generate_php_app(php_version, 'nginx', nginx_version)
+      add_dot_profile_script_to_app(app_template.full_path)
       deploy_php_app(app_template, stack).first
     end
 
