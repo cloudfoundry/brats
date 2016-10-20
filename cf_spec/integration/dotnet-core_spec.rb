@@ -48,4 +48,44 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
       end
     end
   end
+
+  describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
+    let(:stack)           { 'cflinuxfs2' }
+    let(:dotnet_version)  { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:runtime_version) { get_runtime_version(dotnet_version: dotnet_version) }
+
+    let(:app) do
+      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
+    end
+
+    before do
+      cleanup_buildpack(buildpack: 'dotnet-core')
+      install_buildpack_with_uri_credentials(buildpack: 'dotnet-core', buildpack_caching: caching)
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    context "using an uncached buildpack" do
+      let(:caching)         { :uncached }
+      let(:credential_uri)  { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
+      let(:dotnet_core_uri) { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/concourse-binaries/dotnet/dotnet.') + '[a-z\d\.-]+' + Regexp.quote('.linux-amd64.tar.gz')) }
+
+      it 'does not include credentials in logged dependency uris' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(dotnet_core_uri)
+      end
+    end
+
+    context "using a cached buildpack" do
+      let(:caching)        { :cached }
+      let(:credential_uri) { Regexp.new('https___login_password') }
+      let(:dotnet_core_uri) { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_concourse-binaries_dotnet_dotnet.') + '[a-z\d\.-]+' + Regexp.quote('.linux-amd64.tar.gz')) }
+
+      it 'does not include credentials in logged dependency file paths' do
+        expect(app).to_not have_logged(credential_uri)
+        expect(app).to have_logged(dotnet_core_uri)
+      end
+    end
+  end
 end
