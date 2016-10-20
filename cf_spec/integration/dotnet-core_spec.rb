@@ -88,4 +88,35 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
       end
     end
   end
+
+  describe 'deploying an app that has an executable .profile script' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:dotnet_version)  { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:runtime_version) { get_runtime_version(dotnet_version: dotnet_version) }
+
+    let(:app) do
+      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      add_dot_profile_script_to_app(app_template.full_path)
+      deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
+    end
+
+    let(:browser) { Machete::Browser.new(app) }
+
+    before(:all) do
+      skip_if_no_dot_profile_support_on_targeted_cf
+      cleanup_buildpack(buildpack: 'dotnet-core')
+      install_buildpack(buildpack: 'dotnet-core')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'executes the .profile script' do
+      expect(app).to have_logged("PROFILE_SCRIPT_IS_PRESENT_AND_RAN")
+    end
+
+    it 'does not let me view the .profile script' do
+      browser.visit_path('/.profile')
+      expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
+    end
+  end
 end
