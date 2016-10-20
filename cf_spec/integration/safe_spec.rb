@@ -157,4 +157,27 @@ RSpec.describe 'during staging' do
       expect(template.name).to keep_credentials_out_of_droplet
     end
   end
+
+  context 'the .NET Core buildpack', language: 'dotnet-core' do
+    let(:buildpack_name) { 'dotnet-core' }
+
+    it 'will not write credentials to the app droplet' do
+      manifest     = parsed_manifest(buildpack: buildpack_name)
+      dotnet_version = manifest['dependencies'].find{ |d| d['name'] == 'dotnet' }['version']
+
+      runtime_version = get_runtime_version(dotnet_version: dotnet_version)
+
+      template = DotnetCoreTemplateApp.new(dotnet_version, runtime_version)
+      template.generate!
+
+      @app = Machete.deploy_app(
+        template.path,
+        name: template.name,
+        service: true
+      )
+
+      expect(@app).to be_running
+      expect(template.name).to keep_credentials_out_of_droplet
+    end
+  end
 end
