@@ -172,4 +172,27 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
+    let(:app) do
+      jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
+      ruby_version = $1
+      jruby_version = $2
+      app_template = generate_jruby_app(ruby_version, jruby_version)
+      add_dot_profile_script_to_app(app_template.full_path)
+      deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack(buildpack: 'ruby')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
 end

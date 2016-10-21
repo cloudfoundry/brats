@@ -112,4 +112,23 @@ describe 'For all supported Go versions', language: 'go' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:go_version) { dependency_versions_in_manifest('go', 'go', stack).last }
+    let(:app) do
+      app_template = generate_go_app(go_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'go-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'go')
+      install_buildpack(buildpack: 'go')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
 end

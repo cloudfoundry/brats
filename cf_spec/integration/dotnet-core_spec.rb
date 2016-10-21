@@ -119,4 +119,24 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:dotnet_version)  { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:runtime_version) { get_runtime_version(dotnet_version: dotnet_version) }
+    let(:app) do
+      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'dotnet-core')
+      install_buildpack(buildpack: 'dotnet-core')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
 end

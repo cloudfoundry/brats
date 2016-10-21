@@ -155,4 +155,24 @@ describe 'For the php buildpack', language: 'php' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
+    let(:app) do
+      nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
+      app_template = generate_php_app(php_version, 'nginx', nginx_version)
+      deploy_php_app(app_template, stack).first
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'php')
+      install_buildpack(buildpack: 'php')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
 end

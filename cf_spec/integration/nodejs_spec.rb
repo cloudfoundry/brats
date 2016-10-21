@@ -168,4 +168,23 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
+    let(:app) do
+      app_template = generate_nodejs_app(nodejs_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'nodejs-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'nodejs')
+      install_buildpack(buildpack: 'nodejs')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
 end

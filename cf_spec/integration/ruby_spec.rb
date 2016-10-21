@@ -159,4 +159,25 @@ describe 'For the ruby buildpack', language: 'ruby' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:ruby_version)   { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
+    let(:app) do
+      app_template = generate_ruby_app(ruby_version)
+      add_dot_profile_script_to_app(app_template.full_path)
+      deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack(buildpack: 'ruby')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
+
 end

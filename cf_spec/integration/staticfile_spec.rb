@@ -72,4 +72,22 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:app) do
+      app_template = generate_staticfile_app
+      deploy_app(template: app_template, stack: stack, buildpack: 'staticfile-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'staticfile')
+      install_buildpack(buildpack: 'staticfile')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
 end

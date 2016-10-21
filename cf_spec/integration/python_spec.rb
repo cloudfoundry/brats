@@ -142,4 +142,24 @@ describe 'For the python buildpack', language: 'python' do
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
+
+  describe 'deploying an app that has sensitive environment variables' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+    let(:app) do
+      app_template = generate_python_app(python_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack(buildpack: 'python')
+    end
+
+    it 'will not write credentials to the app droplet' do
+      expect(app).to be_running
+      expect(app.name).to keep_credentials_out_of_droplet
+    end
+  end
+
 end
