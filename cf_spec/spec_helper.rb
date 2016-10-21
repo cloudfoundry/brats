@@ -12,6 +12,12 @@ Machete.logger = Machete::Logger.new('log/integration.log')
 
 BRATS_BRANCH = ENV['BRATS_BRANCH'] || 'master'
 
+def is_current_user_language_tag?(language)
+  RSpec.configure do |config|
+    language == config.filter.rules[:language]
+  end
+end
+
 def parsed_manifest(buildpack:, branch: BRATS_BRANCH)
   manifest_url = "https://raw.githubusercontent.com/cloudfoundry/#{buildpack}-buildpack/#{branch}/manifest.yml"
   YAML.load(open(manifest_url))

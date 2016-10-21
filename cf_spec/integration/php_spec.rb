@@ -69,16 +69,18 @@ describe 'For the php buildpack', language: 'php' do
 
     valid_web_servers  = %w(httpd nginx)
 
-    ['cflinuxfs2'].each do |stack|
-      context "on the #{stack} stack", stack: stack do
-        php_versions = dependency_versions_in_manifest('php', 'php', stack)
+    if is_current_user_language_tag?('php')
+      ['cflinuxfs2'].each do |stack|
+        context "on the #{stack} stack", stack: stack do
+          php_versions = dependency_versions_in_manifest('php', 'php', stack)
 
-        dependencies = parsed_manifest(buildpack: 'php').fetch('dependencies')
-        web_servers  = dependencies.select { |binary| valid_web_servers.include?(binary['name']) && binary['cf_stacks'].include?('cflinuxfs2') }
+          dependencies = parsed_manifest(buildpack: 'php').fetch('dependencies')
+          web_servers  = dependencies.select { |binary| valid_web_servers.include?(binary['name']) && binary['cf_stacks'].include?('cflinuxfs2') }
 
-        php_versions.each do |php_version|
-          web_servers.each do |web_server|
-            it_behaves_like :a_deploy_of_php_app_to_cf, php_version, web_server, stack
+          php_versions.each do |php_version|
+            web_servers.each do |web_server|
+              it_behaves_like :a_deploy_of_php_app_to_cf, php_version, web_server, stack
+            end
           end
         end
       end

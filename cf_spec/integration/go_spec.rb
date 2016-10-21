@@ -39,11 +39,13 @@ describe 'For all supported Go versions', language: 'go' do
     install_buildpack(buildpack: 'go')
   end
 
-  ['cflinuxfs2'].each do |stack|
-    context "on the #{stack} stack", stack: stack do
-      go_versions = dependency_versions_in_manifest('go','go',stack)
-      go_versions.each do |go_version|
-        it_behaves_like :a_deploy_of_go_app_to_cf, go_version, stack
+  if is_current_user_language_tag?('go')
+    ['cflinuxfs2'].each do |stack|
+      context "on the #{stack} stack", stack: stack do
+        go_versions = dependency_versions_in_manifest('go','go',stack)
+        go_versions.each do |go_version|
+          it_behaves_like :a_deploy_of_go_app_to_cf, go_version, stack
+        end
       end
     end
   end

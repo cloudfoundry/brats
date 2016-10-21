@@ -84,11 +84,13 @@ describe 'For the ruby buildpack', language: 'ruby' do
       install_buildpack(buildpack: 'ruby')
     end
 
-    ['cflinuxfs2'].each do |stack|
-      context "on the #{stack} stack", stack: stack do
-        ruby_versions = dependency_versions_in_manifest('ruby', 'ruby', stack)
-        ruby_versions.each do |ruby_version|
-          it_behaves_like :a_deploy_of_ruby_app_to_cf, ruby_version, stack
+    if is_current_user_language_tag?('ruby')
+      ['cflinuxfs2'].each do |stack|
+        context "on the #{stack} stack", stack: stack do
+          ruby_versions = dependency_versions_in_manifest('ruby', 'ruby', stack)
+          ruby_versions.each do |ruby_version|
+            it_behaves_like :a_deploy_of_ruby_app_to_cf, ruby_version, stack
+          end
         end
       end
     end

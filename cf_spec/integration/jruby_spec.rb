@@ -84,16 +84,18 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
       install_buildpack(buildpack: 'ruby')
     end
 
-    ['cflinuxfs2'].each do |stack|
-      context "On #{stack} stack", stack: stack do
+    if is_current_user_language_tag?('ruby')
+      ['cflinuxfs2'].each do |stack|
+        context "On #{stack} stack", stack: stack do
 
-      jruby_versions = dependency_versions_in_manifest('ruby','jruby',stack)
+        jruby_versions = dependency_versions_in_manifest('ruby','jruby',stack)
 
-      jruby_versions.each do |jruby_version_string|
-          match_data = jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
-          ruby_version = match_data[1]
-          jruby_version = match_data[2]
-          it_behaves_like :a_deploy_of_jruby_app_to_cf, ruby_version, jruby_version, stack
+        jruby_versions.each do |jruby_version_string|
+            match_data = jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
+            ruby_version = match_data[1]
+            jruby_version = match_data[2]
+            it_behaves_like :a_deploy_of_jruby_app_to_cf, ruby_version, jruby_version, stack
+          end
         end
       end
     end

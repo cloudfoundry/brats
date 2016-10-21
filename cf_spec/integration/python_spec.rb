@@ -67,11 +67,14 @@ describe 'For the python buildpack', language: 'python' do
       install_buildpack(buildpack: 'python')
     end
 
-    ['cflinuxfs2'].each do |stack|
-      context "on the #{stack} stack", stack: stack do
-        python_versions = dependency_versions_in_manifest('python', 'python', stack)
-        python_versions.each do |python_version|
-          it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack
+
+    if is_current_user_language_tag?('python')
+      ['cflinuxfs2'].each do |stack|
+        context "on the #{stack} stack", stack: stack do
+          python_versions = dependency_versions_in_manifest('python', 'python', stack)
+          python_versions.each do |python_version|
+            it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack
+          end
         end
       end
     end

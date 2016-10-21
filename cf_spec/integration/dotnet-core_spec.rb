@@ -39,11 +39,13 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
       install_buildpack(buildpack: 'dotnet-core')
     end
 
-    ['cflinuxfs2'].each do |stack|
-      context "on the #{stack} stack", stack: stack do
-        dotnet_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
-        dotnet_versions.each do |dotnet_version|
-          it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, dotnet_version, stack
+    if is_current_user_language_tag?('dotnet-core')
+      ['cflinuxfs2'].each do |stack|
+        context "on the #{stack} stack", stack: stack do
+          dotnet_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
+          dotnet_versions.each do |dotnet_version|
+            it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, dotnet_version, stack
+          end
         end
       end
     end

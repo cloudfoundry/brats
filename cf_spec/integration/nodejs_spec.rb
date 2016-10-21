@@ -85,19 +85,21 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       install_buildpack(buildpack: 'nodejs')
     end
 
-    ['cflinuxfs2'].each do |stack|
-      context "on the #{stack} stack", stack: stack do
+    if is_current_user_language_tag?('nodejs')
+      ['cflinuxfs2'].each do |stack|
+        context "on the #{stack} stack", stack: stack do
 
-        nodejs_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
+          nodejs_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
 
-        nodejs_versions.each do |nodejs_version|
-          it_behaves_like :a_deploy_of_nodejs_app_to_cf, nodejs_version, stack
-        end
+          nodejs_versions.each do |nodejs_version|
+            it_behaves_like :a_deploy_of_nodejs_app_to_cf, nodejs_version, stack
+          end
 
-        nodejs_versions.map { |nodejs_version|
-          '~>' + /(\d+)\.(\d+)/.match(nodejs_version)[0] + '.0'
-        }.uniq.each do |squiggle_version|
-          it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
+          nodejs_versions.map { |nodejs_version|
+            '~>' + /(\d+)\.(\d+)/.match(nodejs_version)[0] + '.0'
+          }.uniq.each do |squiggle_version|
+            it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
+          end
         end
       end
     end
