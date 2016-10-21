@@ -6,11 +6,12 @@ def generate_dotnet_core_app(dotnet_version, runtime_version)
   template
 end
 
-RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |dotnet_version, runtime_version, stack|
-  context "with .NET SDK version: #{dotnet_version} and .NET runtime version: #{runtime_version}" do
+RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |dotnet_version, stack|
+  context "with .NET SDK version: #{dotnet_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
+      runtime_version = get_runtime_version(dotnet_version: dotnet_version)
       app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
       @app = deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
     end
@@ -42,8 +43,7 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
       context "on the #{stack} stack", stack: stack do
         dotnet_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
         dotnet_versions.each do |dotnet_version|
-          runtime_version = get_runtime_version(dotnet_version: dotnet_version)
-          it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, dotnet_version, runtime_version, stack
+          it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, dotnet_version, stack
         end
       end
     end
