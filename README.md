@@ -19,5 +19,8 @@ bundle install
 
 cf api api.cf-deployment.com
 
-rspec cf_spec/integration/ruby_spec.rb
+rspec cf_spec/integration/ruby_spec.rb --tag language:ruby
 ```
+
+Note that the appropriate language tag is required to run the full BRATS suite for the specified buildpack.
+The interpreter matrix tests will not execute unless the tag for the appropriate interpreter is passed into the rspec arguments.
