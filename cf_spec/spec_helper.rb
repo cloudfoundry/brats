@@ -14,6 +14,9 @@ BRATS_BRANCH = ENV['BRATS_BRANCH'] || 'master'
 
 def is_current_user_language_tag?(language)
   RSpec.configure do |config|
+    config.color = true
+    config.tty = true
+
     language == config.filter.rules[:language]
   end
 end
