@@ -137,7 +137,7 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
       let(:jruby_uri)      { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_') +
-                                        '(manual_binaries_)?' +
+                                        '(manual-binaries_)?' +
                                         Regexp.quote('jruby_jruby-') + '[\d\.]+' +
                                         Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
 
