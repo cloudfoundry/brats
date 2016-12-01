@@ -122,7 +122,9 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
       let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password@') }
-      let(:jruby_uri)      { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/jruby/jruby-') + '[\d\.]+' +
+      let(:jruby_uri)      { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/') +
+                                        '(manual-binaries\/)?' +
+                                        Regexp.quote('jruby/jruby-') + '[\d\.]+' +
                                         Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
 
       it 'does not include credentials in logged dependency uris' do
@@ -134,7 +136,9 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:jruby_uri)      { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_jruby_jruby-') + '[\d\.]+' +
+      let(:jruby_uri)      { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_') +
+                                        '(manual_binaries_)?' +
+                                        Regexp.quote('jruby_jruby-') + '[\d\.]+' +
                                         Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
 
       it 'does not include credentials in logged dependency file paths' do
