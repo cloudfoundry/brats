@@ -1,26 +1,26 @@
 require 'spec_helper'
 
-def generate_dotnet_core_app(dotnet_version, runtime_version)
-  template = DotnetCoreTemplateApp.new(dotnet_version, runtime_version)
+def generate_dotnet_core_app(sdk_version, framework_version)
+  template = DotnetCoreTemplateApp.new(sdk_version, framework_version)
   template.generate!
   template
 end
 
-RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |dotnet_version, stack|
-  context "with .NET SDK version: #{dotnet_version}" do
+RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |sdk_version, framework_version, stack|
+  context "with .NET SDK version: #{sdk_version} and .NET Framework version: #{framework_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      runtime_version = get_runtime_version(dotnet_version: dotnet_version)
-      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
       @app = deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
     end
 
     after(:all) { Machete::CF::DeleteApp.new.execute(@app) }
 
-    it 'installs the correct version of dotnet' do
+    it 'installs the correct version of .NET SDK + .NET Framework' do
       expect(@app).to be_running
-      expect(@app).to have_logged "dotnet version: #{dotnet_version}"
+      expect(@app).to have_logged ".NET SDK version: #{sdk_version}"
+      expect(@app).to have_logged /(Downloading and installing .NET Framework #{framework_version})|(.NET Framework #{framework_version} already installed)/
     end
 
     it 'runs a simple webserver' do
@@ -42,9 +42,13 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     if is_current_user_language_tag?('dotnet-core')
       ['cflinuxfs2'].each do |stack|
         context "on the #{stack} stack", stack: stack do
-          dotnet_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
-          dotnet_versions.each do |dotnet_version|
-            it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, dotnet_version, stack
+          sdk_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
+          framework_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack)
+
+          sdk_versions.each do |sdk|
+            framework_versions.each do |framework|
+              it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, sdk, framework, stack
+            end
           end
         end
       end
@@ -52,12 +56,12 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)           { 'cflinuxfs2' }
-    let(:dotnet_version)  { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
-    let(:runtime_version) { get_runtime_version(dotnet_version: dotnet_version) }
+    let(:stack)             { 'cflinuxfs2' }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
 
     let(:app) do
-      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
       deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
     end
 
@@ -93,11 +97,11 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
 
   describe 'deploying an app that has an executable .profile script' do
     let(:stack)          { 'cflinuxfs2' }
-    let(:dotnet_version)  { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
-    let(:runtime_version) { get_runtime_version(dotnet_version: dotnet_version) }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
 
     let(:app) do
-      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
       add_dot_profile_script_to_app(app_template.full_path)
       deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
     end
@@ -124,10 +128,11 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
 
   describe 'deploying an app that has sensitive environment variables' do
     let(:stack)          { 'cflinuxfs2' }
-    let(:dotnet_version)  { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
-    let(:runtime_version) { get_runtime_version(dotnet_version: dotnet_version) }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+
     let(:app) do
-      app_template = generate_dotnet_core_app(dotnet_version, runtime_version)
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
       deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
     end
 
