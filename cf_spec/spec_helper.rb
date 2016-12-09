@@ -26,6 +26,11 @@ def parsed_manifest(buildpack:, branch: BRATS_BRANCH)
   YAML.load(open(manifest_url))
 end
 
+def sdk_msbuild?(sdk_version:, branch: BRATS_BRANCH)
+  sdk_versions_url = "https://raw.githubusercontent.com/cloudfoundry/dotnet-core-buildpack/#{branch}/dotnet-sdk-tools.yml"
+  YAML.load(open(sdk_versions_url))['msbuild'].include? sdk_version
+end
+
 def dependency_versions_in_manifest(buildpack, dependency, stack)
   dependencies = parsed_manifest(buildpack: buildpack).fetch('dependencies')
   dependencies.select { |d| d['name'] == dependency && d['cf_stacks'].include?(stack) }.map {|dep| dep['version']}

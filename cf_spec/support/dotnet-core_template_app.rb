@@ -7,7 +7,7 @@ class DotnetCoreTemplateApp
   end
 
   def path
-    Shellwords.shellescape("dotnet-core/tmp/#{sdk_version}/simple_brats")
+    Shellwords.shellescape("dotnet-core/tmp/#{sdk_version}/#{framework_version}/simple_brats")
   end
 
   def name
@@ -16,11 +16,11 @@ class DotnetCoreTemplateApp
 
   def generate!
     origin_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'dotnet-core', 'simple_brats')
-    copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'dotnet-core', 'tmp', sdk_version.to_s, 'simple_brats')
-    @full_path = File.expand_path(copied_template_path)
-    FileUtils.rm_rf(copied_template_path)
-    FileUtils.mkdir_p(File.dirname(copied_template_path))
-    FileUtils.cp_r(origin_template_path, copied_template_path)
+    @copied_template_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'dotnet-core', 'tmp', sdk_version.to_s , framework_version.to_s ,'simple_brats')
+    @full_path = File.expand_path(@copied_template_path)
+    FileUtils.rm_rf(@copied_template_path)
+    FileUtils.mkdir_p(File.dirname(@copied_template_path))
+    FileUtils.cp_r(origin_template_path, @copied_template_path)
 
     major, minor, _ = @framework_version.split('.')
     if major == '1' && minor == '1'
@@ -29,6 +29,27 @@ class DotnetCoreTemplateApp
       net_core_app = 'netcoreapp1.0'
     end
 
+    if sdk_msbuild?(sdk_version: @sdk_version)
+      write_csproj_file(framework_version, net_core_app)
+    else
+      write_project_json_file(framework_version, net_core_app)
+    end
+
+    global = {
+      "projects" => [ "src", "test" ],
+      "sdk" => {
+        "version" => sdk_version
+      }
+    }
+
+    File.write(
+      File.join(@copied_template_path, 'global.json'),
+      JSON.generate(global)
+    )
+
+  end
+
+  def write_project_json_file(framework_version, net_core_app)
     project = {
       'buildOptions' => {
         'emitEntryPoint' => true,
@@ -45,31 +66,68 @@ class DotnetCoreTemplateApp
       },
       "frameworks" => {
         net_core_app => { }
-      },
-      "tools" => {
-        "Microsoft.AspNetCore.Server.IISIntegration.Tools" => {
-          "version" => sdk_version,
-          "imports" => "portable-net45+wp80+win8+wpa81+dnxcore50"
-        }
       }
     }
 
-
     File.write(
-      File.join(copied_template_path, 'project.json'),
+      File.join(@copied_template_path, 'project.json'),
       JSON.generate(project)
     )
+  end
 
-    global = {
-      "projects" => [ "src", "test" ],
-      "sdk" => {
-        "version" => sdk_version
-      }
-    }
+  def write_csproj_file(framework_version, net_core_app)
+
+    csproj_xml = <<-XML
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>#{net_core_app}</TargetFramework>
+    <DebugType>portable</DebugType>
+    <AssemblyName>simple_brats</AssemblyName>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\\*.cs" />
+    <EmbeddedResource Include="**\\*.resx" />
+    <EmbeddedResource Include="compiler\\resources\\**\\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Sdk">
+      <Version>1.0.0-alpha-20161104-2</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Sdk.Web">
+      <Version>1.0.0-alpha-20161104-2</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration">
+      <Version>1.*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel">
+      <Version>1.*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.App">
+      <Version>#{framework_version}</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine">
+      <Version>1.*</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildToolsPath)\\Microsoft.CSharp.targets" />
+</Project>
+XML
 
     File.write(
-      File.join(copied_template_path, 'global.json'),
-      JSON.generate(global)
+      File.join(@copied_template_path, 'simple_brats.csproj'),
+      csproj_xml
     )
 
   end
