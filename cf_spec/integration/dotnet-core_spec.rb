@@ -20,7 +20,7 @@ RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |sdk_version, framew
     it 'installs the correct version of .NET SDK + .NET Framework' do
       expect(@app).to be_running
       expect(@app).to have_logged ".NET SDK version: #{sdk_version}"
-      expect(@app).to have_logged /(Downloading and installing .NET Framework #{framework_version})|(.NET Framework #{framework_version} already installed)/
+      expect(@app).to have_logged /(Downloading and installing .NET Core runtime #{framework_version})|(.NET Core runtime #{framework_version} already installed)/
     end
 
     it 'runs a simple webserver' do
