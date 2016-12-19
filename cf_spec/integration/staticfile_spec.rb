@@ -8,6 +8,26 @@ def generate_staticfile_app
 end
 
 describe 'For the staticfile buildpack', language: 'staticfile' do
+  describe 'deploying an app with an updated version of the same buildpack' do
+    let(:stack)         { 'cflinuxfs2' }
+    let(:app) do
+      app_template = generate_staticfile_app
+      deploy_app(template: app_template, stack: stack, buildpack: 'staticfile-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'staticfile')
+      install_buildpack(buildpack: 'staticfile')
+    end
+
+    it 'prints useful warning message to stdout' do
+      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      bump_buildpack_version(buildpack: 'staticfile')
+      Machete.push(app)
+      expect(app).to have_logged('WARNING: buildpack version changed from')
+    end
+  end
+
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)         { 'cflinuxfs2' }
     let(:nginx_version) { dependency_versions_in_manifest('staticfile', 'nginx', stack).last }

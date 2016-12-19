@@ -65,6 +65,21 @@ def deploy_app(template:, stack:, buildpack:)
   )
 end
 
+def bump_buildpack_version(buildpack:)
+  FileUtils.mkdir_p('tmp')
+  File.write("tmp/#{buildpack}-buildpack/VERSION", '99.99.99')
+  Bundler.with_clean_env do
+    system(<<-EOF)
+           cd tmp/#{buildpack}-buildpack
+           export BUNDLE_GEMFILE=cf.Gemfile
+           bundle install
+           bundle exec buildpack-packager --cached
+           cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip -i 1 --enable
+           echo "\n\nBumping version of #{buildpack}-brat-buildpack\n\n"
+    EOF
+  end
+end
+
 def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
