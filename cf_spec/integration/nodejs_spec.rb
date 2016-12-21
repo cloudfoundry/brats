@@ -79,6 +79,29 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |nodejs_version, stack|
 end
 
 describe 'For the nodejs buildpack', language: 'nodejs' do
+  describe 'deploying an app with an updated version of the same buildpack' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
+    let(:app) do
+      app_template = generate_nodejs_app(nodejs_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'nodejs-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'nodejs')
+      install_buildpack(buildpack: 'nodejs')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'prints useful warning message to stdout' do
+      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      bump_buildpack_version(buildpack: 'nodejs')
+      Machete.push(app)
+      expect(app).to have_logged('WARNING: buildpack version changed from')
+    end
+  end
+
   describe 'Deploying CF apps' do
     before(:all) do
       cleanup_buildpack(buildpack: 'nodejs')
