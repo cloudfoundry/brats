@@ -33,6 +33,30 @@ RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |sdk_version, framew
 end
 
 describe 'For the .NET Core buildpack', language: 'dotnet-core' do
+  describe 'deploying an app with an updated version of the same buildpack' do
+    let(:stack)             { 'cflinuxfs2' }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+    let(:app) do
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'dotnet-core')
+      install_buildpack(buildpack: 'dotnet-core')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'prints useful warning message to stdout' do
+      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      bump_buildpack_version(buildpack: 'dotnet-core')
+      Machete.push(app)
+      expect(app).to have_logged('WARNING: buildpack version changed from')
+    end
+  end
+
   describe 'For all supported dotnet versions' do
     before(:all) do
       cleanup_buildpack(buildpack: 'dotnet-core')
