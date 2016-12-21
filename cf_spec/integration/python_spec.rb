@@ -74,6 +74,8 @@ describe 'For the python buildpack', language: 'python' do
       install_buildpack(buildpack: 'python')
     end
 
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
     it 'prints useful warning message to stdout' do
       expect(app).to_not have_logged('WARNING: buildpack version changed from')
       bump_buildpack_version(buildpack: 'python')
