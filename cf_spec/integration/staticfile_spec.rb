@@ -107,6 +107,8 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
       install_buildpack(buildpack: 'staticfile')
     end
 
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
     it 'will not write credentials to the app droplet' do
       expect(app).to be_running
       expect(app.name).to keep_credentials_out_of_droplet

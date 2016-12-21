@@ -69,6 +69,8 @@ describe 'For the binary buildpack', language: 'binary' do
       install_buildpack(buildpack: 'binary')
     end
 
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
     it 'will not write credentials to the app droplet' do
       expect(app).to be_running
       expect(app.name).to keep_credentials_out_of_droplet
