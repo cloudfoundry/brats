@@ -61,6 +61,27 @@ end
 
 
 describe 'For the python buildpack', language: 'python' do
+  describe 'deploying an app with an updated version of the same buildpack' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+    let(:app) do
+      app_template = generate_python_app(python_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack(buildpack: 'python')
+    end
+
+    it 'prints useful warning message to stdout' do
+      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      bump_buildpack_version(buildpack: 'python')
+      Machete.push(app)
+      expect(app).to have_logged('WARNING: buildpack version changed from')
+    end
+  end
+
   describe 'For all supported Python versions' do
     before(:all) do
       cleanup_buildpack(buildpack: 'python')
