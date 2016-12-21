@@ -61,6 +61,30 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_bin
 end
 
 describe 'For the php buildpack', language: 'php' do
+  describe 'deploying an app with an updated version of the same buildpack' do
+    let(:stack)         { 'cflinuxfs2' }
+    let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
+    let(:app) do
+      nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
+      app_template = generate_php_app(php_version, 'nginx', nginx_version)
+      deploy_php_app(app_template, stack).first
+    end
+
+    before(:all) do
+      cleanup_buildpack(buildpack: 'php')
+      install_buildpack(buildpack: 'php')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'prints useful warning message to stdout' do
+      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      bump_buildpack_version(buildpack: 'php')
+      Machete.push(app)
+      expect(app).to have_logged('WARNING: buildpack version changed from')
+    end
+  end
+
   describe 'For all supported PHP versions' do
     before(:all) do
       cleanup_buildpack(buildpack: 'php')
