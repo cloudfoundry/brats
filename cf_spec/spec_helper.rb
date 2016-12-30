@@ -10,7 +10,17 @@ require 'shellwords'
 `mkdir -p log`
 Machete.logger = Machete::Logger.new('log/integration.log')
 
-BRATS_BRANCH = ENV['BRATS_BRANCH'] || 'master'
+def missing_buildpack_branch
+  'Please specify a branch of the buildpack to run BRATS against. ' +
+  "To do so, add '--tag buildpack_branch:<git branch>' to the arguments " +
+  'passed to rspec'
+end
+
+BUILDPACK_BRANCH = RSpec.configure do |config|
+  branch = config.filter.rules[:buildpack_branch]
+  raise missing_buildpack_branch if branch.nil?
+  branch
+end
 
 def is_current_user_language_tag?(language)
   RSpec.configure do |config|
@@ -21,12 +31,12 @@ def is_current_user_language_tag?(language)
   end
 end
 
-def parsed_manifest(buildpack:, branch: BRATS_BRANCH)
+def parsed_manifest(buildpack:, branch: BUILDPACK_BRANCH)
   manifest_url = "https://raw.githubusercontent.com/cloudfoundry/#{buildpack}-buildpack/#{branch}/manifest.yml"
   YAML.load(open(manifest_url))
 end
 
-def sdk_msbuild?(sdk_version:, branch: BRATS_BRANCH)
+def sdk_msbuild?(sdk_version:, branch: BUILDPACK_BRANCH)
   sdk_versions_url = "https://raw.githubusercontent.com/cloudfoundry/dotnet-core-buildpack/#{branch}/dotnet-sdk-tools.yml"
   YAML.load(open(sdk_versions_url))['msbuild'].include? sdk_version
 end
@@ -80,7 +90,7 @@ def bump_buildpack_version(buildpack:)
   end
 end
 
-def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
+def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
     system(<<-EOF)
@@ -99,7 +109,7 @@ def install_buildpack(buildpack:, branch: BRATS_BRANCH, position: 100)
   end
 end
 
-def install_buildpack_with_uri_credentials(buildpack:, branch: BRATS_BRANCH, position: 100, buildpack_caching: :uncached)
+def install_buildpack_with_uri_credentials(buildpack:, branch: BUILDPACK_BRANCH, position: 100, buildpack_caching: :uncached)
   available_packager_options = { cached: 'cached', uncached: 'uncached' }
   packager_option = available_packager_options[buildpack_caching]
 
@@ -145,7 +155,7 @@ def put_credentials_in_uris_in_manifest(manifest_path)
   File.open(manifest_path, 'w') {|f| f.write(manifest_hash.to_yaml) }
 end
 
-def install_java_buildpack(branch: BRATS_BRANCH, position: 100)
+def install_java_buildpack(branch: BUILDPACK_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
     system(<<-EOF)
