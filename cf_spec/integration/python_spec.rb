@@ -84,6 +84,31 @@ describe 'For the python buildpack', language: 'python' do
     end
   end
 
+  describe 'staging with a version of python that is not the latest patch release in the manifest' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:python_version) do
+      dependency_versions_in_manifest('python', 'python', stack).sort do |ver1, ver2|
+        Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
+      end.first
+    end
+
+    let(:app) do
+      app_template = generate_python_app(python_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
+
+    before do
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack(buildpack: 'python')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'logs a warning that tells the user to upgrade the dependency' do
+      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of python is available in this buildpack/)
+    end
+  end
+
   describe 'For all supported Python versions' do
     before(:all) do
       cleanup_buildpack(buildpack: 'python')
