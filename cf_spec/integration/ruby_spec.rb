@@ -119,6 +119,31 @@ describe 'For the ruby buildpack', language: 'ruby' do
     end
   end
 
+  describe 'staging with a version of ruby that is not the latest patch release in the manifest' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:ruby_version) do
+      dependency_versions_in_manifest('ruby', 'ruby', stack).sort do |ver1, ver2|
+        Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
+      end.first
+    end
+
+    let(:app) do
+      app_template = generate_ruby_app(ruby_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
+    end
+
+    before do
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack(buildpack: 'ruby')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'logs a warning that tells the user to upgrade the dependency' do
+      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of ruby is available in this buildpack/)
+    end
+  end
+
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)          { 'cflinuxfs2' }
     let(:ruby_version)   { dependency_versions_in_manifest('ruby', 'ruby', stack).last }
