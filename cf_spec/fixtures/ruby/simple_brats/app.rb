@@ -1,7 +1,7 @@
 require 'bcrypt'
 require 'bson'
 require 'eventmachine'
-require 'mysql'
+require 'mysql2'
 require 'nokogiri'
 require 'pg'
 require 'sinatra'
@@ -42,10 +42,10 @@ get '/pg' do
   end
 end
 
-get '/mysql' do
+get '/mysql2' do
   begin
-    Mysql.new('testing')
-  rescue Mysql::Error => e
+    Mysql2::Client.new(:host => 'testing')
+  rescue Mysql2::Error => e
     e.message
   end
 end

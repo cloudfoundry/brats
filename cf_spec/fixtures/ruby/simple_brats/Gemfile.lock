@@ -5,7 +5,7 @@ GEM
     bson (3.0.3)
     eventmachine (1.0.7)
     mini_portile (0.6.2)
-    mysql (2.9.1)
+    mysql2 (0.4.5)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     pg (0.18.2)
@@ -25,10 +25,10 @@ DEPENDENCIES
   bcrypt
   bson
   eventmachine
-  mysql
+  mysql2
   nokogiri
   pg
   sinatra
 
 BUNDLED WITH
-   1.10.3
+   1.13.7

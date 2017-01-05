@@ -67,9 +67,9 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
       end
     end
 
-    it 'supports mysql' do
+    it 'supports mysql2' do
       2.times do
-        browser.visit_path('/mysql')
+        browser.visit_path('/mysql2')
 
         expect(browser).to have_body("Unknown MySQL server host 'testing'")
       end
