@@ -79,6 +79,32 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     end
   end
 
+  describe 'staging with a version of dotnet that is not the latest patch release in the manifest' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:sdk_version) do
+      dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort do |ver1, ver2|
+        Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
+      end.first
+    end
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+
+    let(:app) do
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
+    end
+
+    before do
+      cleanup_buildpack(buildpack: 'dotnet-core')
+      install_buildpack(buildpack: 'dotnet-core')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'logs a warning that tells the user to upgrade the dependency' do
+      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of dotnet is available in this buildpack/)
+    end
+  end
+
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)             { 'cflinuxfs2' }
     let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
