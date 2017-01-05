@@ -111,6 +111,32 @@ describe 'For the php buildpack', language: 'php' do
     end
   end
 
+  describe 'staging with a version of php that is not the latest patch release in the manifest' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:php_version) do
+      dependency_versions_in_manifest('php', 'php', stack).sort do |ver1, ver2|
+        Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
+      end.first
+    end
+
+    let(:app) do
+      nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
+      app_template = generate_php_app(php_version, 'nginx', nginx_version)
+      deploy_php_app(app_template, stack).first
+    end
+
+    before do
+      cleanup_buildpack(buildpack: 'php')
+      install_buildpack(buildpack: 'php')
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    it 'logs a warning that tells the user to upgrade the dependency' do
+      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of php is available in this buildpack/)
+    end
+  end
+
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)         { 'cflinuxfs2' }
     let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
