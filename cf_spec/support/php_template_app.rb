@@ -66,6 +66,10 @@ class PHPTemplateApp
          zip
          zlib)
 
+    # remove snmp b/c it is generating too many errors
+    # revert this once #137833437 is complete
+    common_extensions = common_extensions - %w(snmp)
+
     php5_extensions = %w(
          gearman
          igbinary
