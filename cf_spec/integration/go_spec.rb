@@ -182,3 +182,47 @@ describe 'For all supported Go versions', language: 'go' do
     end
   end
 end
+
+describe 'staging with go buildpack that sets EOL on dependency' do
+  let(:stack)      { 'cflinuxfs2' }
+  let(:go_version) { dependency_versions_in_manifest('go', 'go', stack).last }
+  let(:app) do
+    app_template = generate_go_app(go_version)
+    deploy_app(template: app_template, stack: stack, buildpack: 'go-brat-buildpack')
+  end
+  let(:version_line) { go_version.gsub(/\.\d+$/,'') }
+  let(:eol_date) { (Date.today + 10) }
+  let(:warning_message) { /WARNING: go #{version_line} will no longer be available in new buildpacks released after/ }
+
+  before do
+    cleanup_buildpack(buildpack: 'go')
+    install_buildpack(buildpack: 'go', buildpack_caching: caching) do
+      hash = YAML.load_file('manifest.yml')
+      hash['dependency_deprecation_dates'] = [{
+        'match' => version_line + '\.\d+',
+        'version_line' => version_line,
+        'name' => 'go',
+        'date' => eol_date
+      }]
+      File.write('manifest.yml', hash.to_yaml)
+    end
+  end
+
+  after { Machete::CF::DeleteApp.new.execute(app) }
+
+  context "using an uncached buildpack" do
+    let(:caching)        { :uncached }
+
+    it 'warns about end of life' do
+      expect(app).to have_logged(warning_message)
+    end
+  end
+
+  context "using an uncached buildpack" do
+    let(:caching)        { :cached }
+
+    it 'warns about end of life' do
+      expect(app).to have_logged(warning_message)
+    end
+  end
+end

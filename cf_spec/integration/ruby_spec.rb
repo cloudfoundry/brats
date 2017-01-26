@@ -119,6 +119,55 @@ describe 'For the ruby buildpack', language: 'ruby' do
     end
   end
 
+  describe 'staging with ruby buildpack that sets EOL on dependency' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:ruby_version) do
+      dependency_versions_in_manifest('ruby', 'ruby', stack).sort do |ver1, ver2|
+        Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
+      end.first
+    end
+    let(:app) do
+      app_template = generate_ruby_app(ruby_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
+    end
+
+    let(:version_line) { ruby_version.gsub(/\.\d+$/,'') }
+    let(:eol_date) { (Date.today + 10) }
+    let(:warning_message) { /WARNING: ruby #{version_line} will no longer be available in new buildpacks released after/ }
+
+    before do
+      cleanup_buildpack(buildpack: 'ruby')
+      install_buildpack(buildpack: 'ruby', buildpack_caching: caching) do
+        hash = YAML.load_file('manifest.yml')
+        hash['dependency_deprecation_dates'] = [{
+          'match' => version_line + '\.\d+',
+          'version_line' => version_line,
+          'name' => 'ruby',
+          'date' => eol_date
+        }]
+        File.write('manifest.yml', hash.to_yaml)
+      end
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(warning_message)
+      end
+    end
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :cached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(warning_message)
+      end
+    end
+  end
+
   describe 'staging with a version of ruby that is not the latest patch release in the manifest' do
     let(:stack)      { 'cflinuxfs2' }
     let(:ruby_version) do

@@ -59,7 +59,6 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
   end
 end
 
-
 describe 'For the python buildpack', language: 'python' do
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)          { 'cflinuxfs2' }
@@ -81,6 +80,51 @@ describe 'For the python buildpack', language: 'python' do
       bump_buildpack_version(buildpack: 'python')
       Machete.push(app)
       expect(app).to have_logged('WARNING: buildpack version changed from')
+    end
+  end
+
+  describe 'staging with python buildpack that sets EOL on dependency' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
+    let(:app) do
+      app_template = generate_python_app(python_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
+    end
+
+    let(:version_line) { python_version.gsub(/\.\d+$/,'') }
+    let(:eol_date) { (Date.today + 10) }
+    let(:warning_message) { /WARNING: python #{version_line} will no longer be available in new buildpacks released after/ }
+
+    before do
+      cleanup_buildpack(buildpack: 'python')
+      install_buildpack(buildpack: 'python', buildpack_caching: caching) do
+        hash = YAML.load_file('manifest.yml')
+        hash['dependency_deprecation_dates'] = [{
+          'match' => version_line + '\.\d+',
+          'version_line' => version_line,
+          'name' => 'python',
+          'date' => eol_date
+        }]
+        File.write('manifest.yml', hash.to_yaml)
+      end
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(warning_message)
+      end
+    end
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :cached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(warning_message)
+      end
     end
   end
 
