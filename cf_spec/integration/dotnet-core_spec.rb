@@ -79,6 +79,57 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     end
   end
 
+  describe 'staging with dotnet buildpack that sets EOL on dependency' do
+    let(:stack)      { 'cflinuxfs2' }
+    let(:sdk_version) do
+      dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort do |ver1, ver2|
+        Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
+      end.first
+    end
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+
+    let(:app) do
+      app_template = generate_dotnet_core_app(sdk_version, framework_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
+    end
+
+    let(:version_line) { '1.0' }
+    let(:eol_date) { (Date.today + 10) }
+    let(:warning_message) { /WARNING: dotnet #{version_line} will no longer be available in new buildpacks released after/ }
+
+    before do
+      cleanup_buildpack(buildpack: 'dotnet-core')
+      install_buildpack(buildpack: 'dotnet-core', buildpack_caching: caching) do
+        hash = YAML.load_file('manifest.yml')
+        hash['dependency_deprecation_dates'] = [{
+          'match' => version_line + '\.\d.*',
+          'version_line' => version_line,
+          'name' => 'dotnet',
+          'date' => eol_date
+        }]
+        File.write('manifest.yml', hash.to_yaml)
+      end
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(warning_message)
+      end
+    end
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :cached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(warning_message)
+      end
+    end
+  end
+
   describe 'staging with a version of dotnet that is not the latest patch release in the manifest' do
     let(:stack)      { 'cflinuxfs2' }
     let(:sdk_version) do

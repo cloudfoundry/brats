@@ -153,7 +153,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     end
   end
 
-  describe 'staging with custom buildpack that sets EOL of dependency' do
+  describe 'staging with custom buildpack that sets EOL on dependency' do
     let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
     let(:app) do
@@ -162,12 +162,12 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     end
     let(:version_line) { nodejs_version.gsub(/\.\d+$/,'') }
     let(:eol_date) { (Date.today + 10) }
+    let(:warning_message) { /WARNING: node #{version_line} will no longer be available in new buildpacks released after/ }
 
     before do
       cleanup_buildpack(buildpack: 'nodejs')
       install_buildpack(buildpack: 'nodejs', buildpack_caching: caching) do
         hash = YAML.load_file('manifest.yml')
-        ## Set deprecation EOL
         hash['dependency_deprecation_dates'] = [{
           'match' => version_line + '\.\d',
           'version_line' => version_line,
@@ -184,7 +184,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       let(:caching)        { :uncached }
 
       it 'warns about end of life' do
-        expect(app).to have_logged(/WARNING: node #{version_line} will no longer be available in new buildpacks released after/)
+        expect(app).to have_logged(warning_message)
       end
     end
 
@@ -192,7 +192,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       let(:caching)        { :cached }
 
       it 'warns about end of life' do
-        expect(app).to have_logged(/WARNING: node #{version_line} will no longer be available in new buildpacks released after/)
+        expect(app).to have_logged(warning_message)
       end
     end
 
@@ -201,7 +201,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       let(:eol_date) { (Date.today + 40) }
 
       it 'does not warn about end of life' do
-        expect(app).to_not have_logged(/WARNING: node #{version_line} will no longer be available in new buildpacks released after/)
+        expect(app).to_not have_logged(warning_message)
       end
     end
   end
