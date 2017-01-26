@@ -121,7 +121,7 @@ end
 
 def install_buildpack_with_uri_credentials(buildpack:, branch: BUILDPACK_BRANCH, position: 100, buildpack_caching: :uncached)
   install_buildpack(buildpack: buildpack, branch: branch, position: position, buildpack_caching: buildpack_caching, running_brats_suffix: ' simulated buildpack with credentials in uri') do
-    manifest_path = "./tmp/#{buildpack}-buildpack/manifest.yml"
+    manifest_path = "./manifest.yml"
     put_credentials_in_uris_in_manifest(manifest_path)
   end
 end
