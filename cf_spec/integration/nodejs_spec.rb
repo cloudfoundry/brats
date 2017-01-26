@@ -153,6 +153,59 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     end
   end
 
+  describe 'staging with custom buildpack that sets EOL of dependency' do
+    let(:stack)          { 'cflinuxfs2' }
+    let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
+    let(:app) do
+      app_template = generate_nodejs_app(nodejs_version)
+      deploy_app(template: app_template, stack: stack, buildpack: 'nodejs-brat-buildpack')
+    end
+    let(:version_line) { nodejs_version.gsub(/\.\d+$/,'') }
+    let(:eol_date) { (Date.today + 10) }
+
+    before do
+      cleanup_buildpack(buildpack: 'nodejs')
+      install_buildpack(buildpack: 'nodejs', buildpack_caching: caching) do
+        hash = YAML.load_file('manifest.yml')
+        ## Set deprecation EOL
+        hash['dependency_deprecation_dates'] = [{
+          'match' => version_line + '\.\d',
+          'version_line' => version_line,
+          'name' => 'node',
+          'date' => eol_date
+        }]
+        File.write('manifest.yml', hash.to_yaml)
+      end
+    end
+
+    after { Machete::CF::DeleteApp.new.execute(app) }
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :uncached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(/WARNING: node #{version_line} will no longer be available in new buildpacks released after/)
+      end
+    end
+
+    context "using an uncached buildpack" do
+      let(:caching)        { :cached }
+
+      it 'warns about end of life' do
+        expect(app).to have_logged(/WARNING: node #{version_line} will no longer be available in new buildpacks released after/)
+      end
+    end
+
+    context "eol is more than 30 days in the future" do
+      let(:caching)        { :uncached }
+      let(:eol_date) { (Date.today + 40) }
+
+      it 'does not warn about end of life' do
+        expect(app).to_not have_logged(/WARNING: node #{version_line} will no longer be available in new buildpacks released after/)
+      end
+    end
+  end
+
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
     let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }

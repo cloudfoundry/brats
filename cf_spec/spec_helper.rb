@@ -90,22 +90,32 @@ def bump_buildpack_version(buildpack:)
   end
 end
 
-def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, position: 100)
+def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, position: 100, buildpack_caching: :cached, &block)
+  buildpack_caching = 'cached' unless buildpack_caching.to_s == 'uncached'
+
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
-    system(<<-EOF)
+    env = {
+      'GITHUB_URL' => "https://github.com/cloudfoundry/#{buildpack}-buildpack",
+      'BUNDLE_GEMFILE' => 'cf.Gemfile'
+    }
+    system(env, <<-EOF)
       set -e
-      GITHUB_URL=https://github.com/cloudfoundry/#{buildpack}-buildpack
       git clone -q -b #{branch} --depth 1 --recursive "$GITHUB_URL" tmp/#{buildpack}-buildpack
-      cd tmp/#{buildpack}-buildpack
-      export BUNDLE_GEMFILE=cf.Gemfile
-      bundle install
-      bundle exec buildpack-packager --cached || bundle exec buildpack-packager cached
-      cf delete-buildpack #{buildpack}-brat-buildpack -f
-      cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack-cached*.zip | head -n 1) #{position} --enable
-
-      echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
     EOF
+
+    Dir.chdir("tmp/#{buildpack}-buildpack") do
+      block.call if block
+
+      system(env, <<-EOF)
+        set -e
+        bundle install
+        bundle exec buildpack-packager --#{buildpack_caching} || bundle exec buildpack-packager #{buildpack_caching}
+        cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
+
+        echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
+      EOF
+    end
   end
 end
 
