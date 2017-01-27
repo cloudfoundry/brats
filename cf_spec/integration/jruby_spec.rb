@@ -125,7 +125,7 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
       let(:jruby_uri)      { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/') +
                                         '(manual-binaries\/)?' +
                                         Regexp.quote('jruby/jruby-') + '[\d\.]+' +
-                                        Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
+                                        Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
@@ -139,7 +139,7 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
       let(:jruby_uri)      { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_') +
                                         '(manual-binaries_)?' +
                                         Regexp.quote('jruby_jruby-') + '[\d\.]+' +
-                                        Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
+                                        Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
 
       it 'does not include credentials in logged dependency file paths' do
         expect(app).to_not have_logged(credential_uri)

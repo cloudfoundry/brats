@@ -190,7 +190,7 @@ describe 'For the python buildpack', language: 'python' do
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
       let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:python_uri)     { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
+      let(:python_uri)     { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
@@ -201,7 +201,7 @@ describe 'For the python buildpack', language: 'python' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:python_uri)     { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_python_python-') + '[\d\.]+' + Regexp.quote('-linux-x64.tgz')) }
+      let(:python_uri)     { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_python_python-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
 
       it 'does not include credentials in logged dependency file paths' do
         expect(app).to_not have_logged(credential_uri)

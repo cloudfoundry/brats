@@ -176,7 +176,7 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     context "using an uncached buildpack" do
       let(:caching)         { :uncached }
       let(:credential_uri)  { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:dotnet_core_uri) { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/dotnet/dotnet.') + '[a-z\d\.-]+' + Regexp.quote('.linux-amd64.tar.gz')) }
+      let(:dotnet_core_uri) { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/dotnet/dotnet.') + '[a-z\d\.-]+' + Regexp.quote('.linux-amd64-') + '[\da-f]+\.tar\.gz') }
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
@@ -187,7 +187,7 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:dotnet_core_uri) { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_dotnet_dotnet.') + '[a-z\d\.-]+' + Regexp.quote('.linux-amd64.tar.gz')) }
+      let(:dotnet_core_uri) { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_dotnet_dotnet.') + '[a-z\d\.-]+' + Regexp.quote('.linux-amd64-') + '[\da-f]+\.tar\.gz') }
 
       it 'does not include credentials in logged dependency file paths' do
         expect(app).to_not have_logged(credential_uri)
