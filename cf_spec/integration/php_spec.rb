@@ -209,7 +209,7 @@ describe 'For the php buildpack', language: 'php' do
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
       let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:php_uri)        { Regexp.new(Regexp.quote("https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/#{php_in_uri}/#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\d]+\.tgz') }
+      let(:php_uri)        { Regexp.new(Regexp.quote("https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/#{php_in_uri}/#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
@@ -220,7 +220,7 @@ describe 'For the php buildpack', language: 'php' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:php_uri)        { Regexp.new(Regexp.quote("https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_#{php_in_uri}_#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\d]+\.tgz') }
+      let(:php_uri)        { Regexp.new(Regexp.quote("https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_#{php_in_uri}_#{php_in_uri}-") + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
 
       it 'does not include credentials in logged dependency file paths' do
         expect(app).to_not have_logged(credential_uri)
