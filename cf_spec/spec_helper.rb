@@ -67,6 +67,10 @@ def add_dot_profile_script_to_app(template_path)
 end
 
 def deploy_app(template:, stack:, buildpack:)
+  buildpack.match /(.*)\-brat\-buildpack/
+  language = $1
+  ENV['BUILDPACK_VERSION'] = File.read("tmp/#{language}-buildpack/VERSION")
+
   Machete.deploy_app(
     template.path,
     name: template.name,
