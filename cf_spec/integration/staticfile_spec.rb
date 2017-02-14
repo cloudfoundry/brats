@@ -8,6 +8,10 @@ def generate_staticfile_app
 end
 
 describe 'For the staticfile buildpack', language: 'staticfile' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'staticfile')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)         { 'cflinuxfs2' }
     let(:app) do

@@ -39,6 +39,10 @@ describe 'For all supported Go versions', language: 'go' do
     install_buildpack(buildpack: 'go')
   end
 
+  after(:all) do
+    cleanup_buildpack(buildpack: 'go')
+  end
+
   if is_current_user_language_tag?('go')
     ['cflinuxfs2'].each do |stack|
       context "on the #{stack} stack", stack: stack do

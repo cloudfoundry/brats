@@ -33,6 +33,10 @@ RSpec.shared_examples :a_deploy_of_dotnet_core_app_to_cf do |sdk_version, framew
 end
 
 describe 'For the .NET Core buildpack', language: 'dotnet-core' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'dotnet-core')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)             { 'cflinuxfs2' }
     let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }

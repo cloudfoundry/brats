@@ -60,6 +60,10 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
 end
 
 describe 'For the python buildpack', language: 'python' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'python')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }

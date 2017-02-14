@@ -79,6 +79,10 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |nodejs_version, stack|
 end
 
 describe 'For the nodejs buildpack', language: 'nodejs' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'nodejs')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }

@@ -61,6 +61,10 @@ RSpec.shared_examples :a_deploy_of_php_app_to_cf do |php_version, web_server_bin
 end
 
 describe 'For the php buildpack', language: 'php' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'php')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)         { 'cflinuxfs2' }
     let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }

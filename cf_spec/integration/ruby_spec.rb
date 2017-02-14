@@ -78,6 +78,10 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
 end
 
 describe 'For the ruby buildpack', language: 'ruby' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'ruby')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)         { 'cflinuxfs2' }
     let(:ruby_version)  { dependency_versions_in_manifest('ruby', 'ruby', stack).last }

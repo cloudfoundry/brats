@@ -8,6 +8,10 @@ def generate_binary_app
 end
 
 describe 'For the binary buildpack', language: 'binary' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'binary')
+  end
+
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)         { 'cflinuxfs2' }
     let(:app) do

@@ -1,6 +1,10 @@
 require 'spec_helper'
 
 describe 'For the java buildpack', language: 'java' do
+  after(:all) do
+    cleanup_buildpack(buildpack: 'java')
+  end
+
   describe 'deploying an app that has sensitive environment variables' do
     let(:app) do
       template = JavaTemplateApp.new
