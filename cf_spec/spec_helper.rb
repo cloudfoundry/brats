@@ -94,7 +94,8 @@ def bump_buildpack_version(buildpack:)
   end
 end
 
-def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, position: 100, buildpack_caching: :cached, running_brats_suffix: '', &block)
+def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :cached, running_brats_suffix: '', &block)
+  position = 100
   buildpack_caching = 'cached' unless buildpack_caching.to_s == 'uncached'
 
   FileUtils.mkdir_p('tmp')
@@ -115,7 +116,7 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, position: 100, build
         set -e
         bundle install
         bundle exec buildpack-packager --#{buildpack_caching} || bundle exec buildpack-packager #{buildpack_caching}
-        cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
+        cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --disable
 
         echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
       EOF
@@ -123,8 +124,8 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, position: 100, build
   end
 end
 
-def install_buildpack_with_uri_credentials(buildpack:, branch: BUILDPACK_BRANCH, position: 100, buildpack_caching: :uncached)
-  install_buildpack(buildpack: buildpack, branch: branch, position: position, buildpack_caching: buildpack_caching, running_brats_suffix: ' simulated buildpack with credentials in uri') do
+def install_buildpack_with_uri_credentials(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :uncached)
+  install_buildpack(buildpack: buildpack, branch: branch, buildpack_caching: buildpack_caching, running_brats_suffix: ' simulated buildpack with credentials in uri') do
     manifest_path = "./manifest.yml"
     put_credentials_in_uris_in_manifest(manifest_path)
   end
