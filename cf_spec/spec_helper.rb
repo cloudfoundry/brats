@@ -88,7 +88,7 @@ def bump_buildpack_version(buildpack:)
            export BUNDLE_GEMFILE=cf.Gemfile
            bundle install
            bundle exec buildpack-packager --cached
-           cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip -i 1 --enable
+           cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip
            echo "\n\nBumping version of #{buildpack}-brat-buildpack\n\n"
     EOF
   end
