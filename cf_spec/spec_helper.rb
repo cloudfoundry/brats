@@ -116,7 +116,7 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :
         set -e
         bundle install
         bundle exec buildpack-packager --#{buildpack_caching} || bundle exec buildpack-packager #{buildpack_caching}
-        cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --disable
+        cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
 
         echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
       EOF
