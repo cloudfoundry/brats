@@ -34,6 +34,7 @@ class PHPTemplateApp
          fileinfo
          ftp
          gd
+         geoip
          gettext
          gmp
          imagick
