@@ -1,0 +1,4 @@
+---
+  applications:
+    - name: java-brats
+      memory: 1G
