@@ -56,7 +56,7 @@ describe 'For the binary buildpack', language: 'binary' do
     end
 
     it 'does not let me view the .profile script' do
-      browser.visit_path('/.profile')
+      browser.visit_path('/.profile', allow_404: true)
       expect(browser).to_not have_body 'PROFILE_SCRIPT_IS_PRESENT_AND_RAN'
     end
   end
