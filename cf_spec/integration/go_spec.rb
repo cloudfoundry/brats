@@ -19,7 +19,7 @@ RSpec.shared_examples :a_deploy_of_go_app_to_cf do |go_version, stack|
 
     it 'runs a simple webserver with correct go version' do
       expect(@app).to be_running(120)
-      expect(@app).to have_logged "Installing go#{go_version}"
+      expect(@app).to have_logged "Installing go\s*#{go_version}"
     end
 
     it 'has content at the root' do
@@ -70,10 +70,10 @@ describe 'For all supported Go versions', language: 'go' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'prints useful warning message to stdout' do
-      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      expect(app).to_not have_logged(/WARNING(:|\*\*) buildpack version changed from/)
       bump_buildpack_version(buildpack: 'go')
       Machete.push(app)
-      expect(app).to have_logged('WARNING: buildpack version changed from')
+      expect(app).to have_logged(/WARNING(:|\*\*) buildpack version changed from/)
     end
   end
 
@@ -196,7 +196,7 @@ describe 'staging with go buildpack that sets EOL on dependency' do
   end
   let(:version_line) { go_version.gsub(/\.\d+$/,'') }
   let(:eol_date) { (Date.today + 10) }
-  let(:warning_message) { /WARNING: go #{version_line} will no longer be available in new buildpacks released after/ }
+  let(:warning_message) { /WARNING(:|\*\*) go #{version_line} will no longer be available in new buildpacks released after/ }
 
   before do
     cleanup_buildpack(buildpack: 'go')
