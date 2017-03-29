@@ -19,7 +19,7 @@ RSpec.shared_examples :a_deploy_of_go_app_to_cf do |go_version, stack|
 
     it 'runs a simple webserver with correct go version' do
       expect(@app).to be_running(120)
-      expect(@app).to have_logged "Installing go\s*#{go_version}"
+      expect(@app).to have_logged /Installing go\s*#{go_version}/
     end
 
     it 'has content at the root' do
