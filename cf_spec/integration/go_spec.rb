@@ -70,10 +70,10 @@ describe 'For all supported Go versions', language: 'go' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'prints useful warning message to stdout' do
-      expect(app).to_not have_logged(/WARNING(:|\*\*) buildpack version changed from/)
+      expect(app).to_not have_logged(/WARNING.* buildpack version changed from/)
       bump_buildpack_version(buildpack: 'go')
       Machete.push(app)
-      expect(app).to have_logged(/WARNING(:|\*\*) buildpack version changed from/)
+      expect(app).to have_logged(/WARNING.* buildpack version changed from/)
     end
   end
 
@@ -136,7 +136,7 @@ describe 'For all supported Go versions', language: 'go' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'logs a warning that tells the user to upgrade the dependency' do
-      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of go is available in this buildpack/)
+      expect(app).to have_logged(/WARNING.* A newer version of go is available in this buildpack/)
     end
   end
 
@@ -196,7 +196,7 @@ describe 'staging with go buildpack that sets EOL on dependency' do
   end
   let(:version_line) { go_version.gsub(/\.\d+$/,'') }
   let(:eol_date) { (Date.today + 10) }
-  let(:warning_message) { /WARNING(:|\*\*) go #{version_line} will no longer be available in new buildpacks released after/ }
+  let(:warning_message) { /WARNING.* go #{version_line} will no longer be available in new buildpacks released after/ }
 
   before do
     cleanup_buildpack(buildpack: 'go')

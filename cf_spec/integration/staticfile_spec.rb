@@ -27,10 +27,10 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'prints useful warning message to stdout' do
-      expect(app).to_not have_logged('buildpack version changed from')
+      expect(app).to_not have_logged(/WARNING.* buildpack version changed from/)
       bump_buildpack_version(buildpack: 'staticfile')
       Machete.push(app)
-      expect(app).to have_logged('buildpack version changed from')
+      expect(app).to have_logged(/WARNING.* buildpack version changed from/)
     end
   end
 
