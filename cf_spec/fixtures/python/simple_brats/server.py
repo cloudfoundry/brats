@@ -15,6 +15,9 @@ port = int(sys.argv[1])
 def hello():
     return "Hello, World"
 
+@app.route("/unicode")
+def unicode():
+    return "max unicode: %d" % sys.maxunicode
 
 @app.route("/bcrypt")
 def test_bcrypt():

@@ -56,6 +56,18 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
         expect(browser).to have_body 'Hello'
       end
     end
+
+    it 'supports the proper version of unicode', version: python_version do
+      2.times do
+        max_unicode = '1114111'
+        if python_version.include? 'ucs2'
+          max_unicode = '65535'
+        end
+
+        browser.visit_path('/unicode')
+        expect(browser).to have_body "max unicode: #{max_unicode}"
+      end
+    end
   end
 end
 
