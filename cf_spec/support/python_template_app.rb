@@ -1,8 +1,12 @@
 class PythonTemplateApp
   attr_reader :python_version, :full_path
 
-  def initialize(python_version)
-    @python_version = python_version
+  def initialize(python_version, ucs2)
+    if ucs2
+      @python_version = "#{python_version}-ucs2"
+    else
+      @python_version = python_version
+    end
   end
 
   def path

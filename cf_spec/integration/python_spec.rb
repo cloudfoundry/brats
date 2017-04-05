@@ -1,18 +1,18 @@
 require 'spec_helper'
 require 'bcrypt'
 
-def generate_python_app(python_version)
-  template = PythonTemplateApp.new(python_version)
+def generate_python_app(python_version, ucs2 = false)
+  template = PythonTemplateApp.new(python_version, ucs2)
   template.generate!
   template
 end
 
-RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
-  context "with Python version #{python_version}" do
+RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack, ucs2|
+  context "with python#{ucs2 ? '-ucs2' : ''} version #{python_version}" do
     let(:browser) { Machete::Browser.new(@app) }
 
     before(:all) do
-      app_template = generate_python_app(python_version)
+      app_template = generate_python_app(python_version, ucs2)
       @app = deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
     end
 
@@ -59,10 +59,7 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack|
 
     it 'supports the proper version of unicode', version: python_version do
       2.times do
-        max_unicode = '1114111'
-        if python_version.include? 'ucs2'
-          max_unicode = '65535'
-        end
+        max_unicode =  ucs2 ? '65535' : '1114111'
 
         browser.visit_path('/unicode')
         expect(browser).to have_body "max unicode: #{max_unicode}"
@@ -179,9 +176,14 @@ describe 'For the python buildpack', language: 'python' do
     if is_current_user_language_tag?('python')
       ['cflinuxfs2'].each do |stack|
         context "on the #{stack} stack", stack: stack do
+          python_ucs2_versions = dependency_versions_in_manifest('python', 'python-ucs2', stack)
+          python_ucs2_versions.each do |python_version|
+            it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack, true
+          end
+
           python_versions = dependency_versions_in_manifest('python', 'python', stack)
           python_versions.each do |python_version|
-            it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack
+            it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack, false
           end
         end
       end
