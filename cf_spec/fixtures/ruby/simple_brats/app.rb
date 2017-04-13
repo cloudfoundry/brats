@@ -10,6 +10,10 @@ get '/' do
   'Hello, World'
 end
 
+get '/version' do
+  RUBY_VERSION
+end
+
 get '/nokogiri' do
   doc = Nokogiri::XML(open('test.xml'))
   doc.xpath('//xml')

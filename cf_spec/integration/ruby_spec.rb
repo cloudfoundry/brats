@@ -21,6 +21,10 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
     it 'installs the correct version of Ruby' do
       expect(@app).to be_running
       expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}"
+      2.times do
+        browser.visit_path('/version')
+        expect(browser).to have_body(ruby_version)
+      end
     end
 
     it 'runs a simple webserver' do
