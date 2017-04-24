@@ -78,39 +78,22 @@ class DotnetCoreTemplateApp
   def write_csproj_file(framework_version, net_core_app)
 
     csproj_xml = <<-XML
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props" />
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>#{net_core_app}</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>simple_brats</AssemblyName>
     <OutputType>Exe</OutputType>
+    <RuntimeFrameworkVersion>#{framework_version}</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\\*.cs" />
-    <EmbeddedResource Include="**\\*.resx" />
-    <EmbeddedResource Include="compiler\\resources\\**\\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk">
-      <Version>1.0.0-alpha-20161104-2</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Sdk.Web">
-      <Version>1.0.0-alpha-20161104-2</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration">
       <Version>1.*</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel">
       <Version>1.*</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETCore.App">
-      <Version>#{framework_version}</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine">
       <Version>1.*</Version>
@@ -120,8 +103,6 @@ class DotnetCoreTemplateApp
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
   </PropertyGroup>
-
-  <Import Project="$(MSBuildToolsPath)\\Microsoft.CSharp.targets" />
 </Project>
 XML
 
