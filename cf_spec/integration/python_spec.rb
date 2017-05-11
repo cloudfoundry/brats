@@ -20,11 +20,17 @@ RSpec.shared_examples :a_deploy_of_python_app_to_cf do |python_version, stack, u
 
     it 'runs a simple webserver', version: python_version do
       expect(@app).to be_running
-      expect(@app).to have_logged /Installing.*python-#{python_version}/
 
       2.times do
         browser.visit_path('/')
         expect(browser).to have_body('Hello, World')
+      end
+    end
+
+    it 'uses the correct python version', version: python_version do
+      2.times do
+        browser.visit_path('/version')
+        expect(browser).to have_body(python_version)
       end
     end
 

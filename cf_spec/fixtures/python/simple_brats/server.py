@@ -3,6 +3,7 @@ import bcrypt
 import psycopg2
 import sys
 import hiredis
+import platform
 
 
 from flask import Flask
@@ -14,6 +15,10 @@ port = int(sys.argv[1])
 @app.route("/")
 def hello():
     return "Hello, World"
+
+@app.route("/version")
+def version():
+    return platform.python_version()
 
 @app.route("/unicode")
 def unicode():
