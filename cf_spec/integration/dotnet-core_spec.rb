@@ -70,11 +70,22 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     if is_current_user_language_tag?('dotnet-core')
       ['cflinuxfs2'].each do |stack|
         context "on the #{stack} stack", stack: stack do
+          project_json_sdk_to_framework = {
+            '1.0.0-preview2-003156' => '1.0.3',
+            '1.0.0-preview2-1-003177' => '1.1.0',
+          }
+
           sdk_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
           framework_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack)
 
           sdk_versions.each do |sdk|
             framework_versions.each do |framework|
+              if project_json_sdk_to_framework.keys.include? sdk
+                if Gem::Version.new(framework) < Gem::Version.new(project_json_sdk_to_framework[sdk])
+                  next
+                end
+              end
+
               it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, sdk, framework, stack
             end
           end
