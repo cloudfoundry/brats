@@ -85,6 +85,9 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
                   next
                 end
               end
+              if Gem::Version.new(framework).segments.first != Gem::Version.new(sdk).segments.first
+                next
+              end
 
               it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, sdk, framework, stack
             end
