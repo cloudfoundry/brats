@@ -25,7 +25,7 @@ class DotnetCoreTemplateApp
     major, minor, _ = @framework_version.split('.')
     if major == '2'
       net_core_app = 'netcoreapp2.0'
-    if major == '1' && minor == '1'
+    elsif major == '1' && minor == '1'
       net_core_app = 'netcoreapp1.1'
     else
       net_core_app = 'netcoreapp1.0'
