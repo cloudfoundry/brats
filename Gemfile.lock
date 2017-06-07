@@ -1,11 +1,12 @@
 GIT
   remote: https://github.com/cloudfoundry/buildpack-packager
-  revision: 1dcb43b064f2499652b021ffe5a32713cf93d79e
-  tag: v2.3.8
+  revision: 12fafa8a695dfb6003bc3297063ce85c1494f77b
+  tag: v2.3.9
   specs:
-    buildpack-packager (2.3.8)
+    buildpack-packager (2.3.9)
       activesupport (~> 4.1)
       kwalify (~> 0)
+      semantic
       terminal-table (~> 1.4)
 
 GIT
@@ -34,7 +35,7 @@ GEM
     ffi (1.9.18)
     httparty (0.14.0)
       multi_xml (>= 0.5.2)
-    i18n (0.8.1)
+    i18n (0.8.4)
     kwalify (0.7.2)
     method_source (0.8.2)
     minitest (5.10.2)
@@ -71,6 +72,7 @@ GEM
     rubocop-rspec (1.5.1)
       rubocop (>= 0.41.2)
     ruby-progressbar (1.8.1)
+    semantic (1.6.0)
     slop (3.6.0)
     terminal-table (1.7.0)
       unicode-display_width (~> 1.1)
@@ -96,4 +98,4 @@ RUBY VERSION
    ruby 2.3.1p112
 
 BUNDLED WITH
-   1.14.6
+   1.15.0
