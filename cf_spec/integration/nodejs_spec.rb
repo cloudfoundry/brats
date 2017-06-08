@@ -27,7 +27,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |nodejs_vers
 
     it 'should have the correct version' do
       expect(@app).to_not have_logged /Downloading and installing undefined.../
-      expect(@app).to have_logged /engines.node (package.json).*#{nodejs_version}/
+      expect(@app).to have_logged /engines.node \(package.json\).*#{nodejs_version}/
       expect(@app).to have_logged /Installing node\s*\d+\.\d+\.\d+/
     end
   end
