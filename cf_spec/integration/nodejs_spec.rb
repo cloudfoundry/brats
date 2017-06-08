@@ -27,8 +27,8 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_with_version_range do |nodejs_vers
 
     it 'should have the correct version' do
       expect(@app).to_not have_logged /Downloading and installing undefined.../
-      expect(@app).to have_logged "engines.node (package.json):  #{nodejs_version}"
-      expect(@app).to have_logged /Downloading and installing node \d+\.\d+\.\d+/
+      expect(@app).to have_logged /engines.node (package.json).*#{nodejs_version}/
+      expect(@app).to have_logged /Installing node\s*\d+\.\d+\.\d+/
     end
   end
 end
@@ -73,7 +73,7 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |nodejs_version, stack|
     end
 
     it 'should have the correct version' do
-      expect(@app).to have_logged("Downloading and installing node #{nodejs_version}")
+      expect(@app).to have_logged(/Installing node\s*#{nodejs_version}/)
     end
   end
 end
@@ -99,10 +99,10 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'prints useful warning message to stdout' do
-      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      expect(app).to_not have_logged(/WARNING.*buildpack version changed from/)
       bump_buildpack_version(buildpack: 'nodejs')
       Machete.push(app)
-      expect(app).to have_logged('WARNING: buildpack version changed from')
+      expect(app).to have_logged(/WARNING.*buildpack version changed from/)
     end
   end
 
@@ -127,7 +127,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'logs a warning that tells the user to upgrade the dependency' do
-      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of node is available in this buildpack/)
+      expect(app).to have_logged(/WARNING.*A newer version of node is available in this buildpack/)
     end
   end
 
@@ -166,7 +166,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     end
     let(:version_line) { nodejs_version.gsub(/\.\d+$/,'') }
     let(:eol_date) { (Date.today + 10) }
-    let(:warning_message) { /WARNING: node #{version_line} will no longer be available in new buildpacks released after/ }
+    let(:warning_message) { /WARNING.*node #{version_line} will no longer be available in new buildpacks released after/ }
 
     before do
       cleanup_buildpack(buildpack: 'nodejs')
