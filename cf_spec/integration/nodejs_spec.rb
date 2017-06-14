@@ -164,7 +164,7 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
       app_template = generate_nodejs_app(nodejs_version)
       deploy_app(template: app_template, stack: stack, buildpack: 'nodejs-brat-buildpack')
     end
-    let(:version_line) { nodejs_version.gsub(/\.\d+$/,'') }
+    let(:version_line) { nodejs_version.gsub(/\.\d+\.\d+$/,'') }
     let(:eol_date) { (Date.today + 10) }
     let(:warning_message) { /WARNING.*node #{version_line} will no longer be available in new buildpacks released after/ }
 
