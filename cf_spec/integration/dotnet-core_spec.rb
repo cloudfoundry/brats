@@ -39,8 +39,8 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
 
   describe 'deploying an app with an updated version of the same buildpack' do
     let(:stack)             { 'cflinuxfs2' }
-    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
-    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort.last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).sort.last }
     let(:app) do
       app_template = generate_dotnet_core_app(sdk_version, framework_version)
       deploy_app(template: app_template, stack: stack, buildpack: 'dotnet-core-brat-buildpack')
@@ -216,8 +216,8 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
 
   describe 'deploying an app that has an executable .profile script' do
     let(:stack)          { 'cflinuxfs2' }
-    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
-    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort.last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).sort.last }
 
     let(:app) do
       app_template = generate_dotnet_core_app(sdk_version, framework_version)
@@ -247,8 +247,8 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
 
   describe 'deploying an app that has sensitive environment variables' do
     let(:stack)          { 'cflinuxfs2' }
-    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
-    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
+    let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort.last }
+    let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).sort.last }
 
     let(:app) do
       app_template = generate_dotnet_core_app(sdk_version, framework_version)
