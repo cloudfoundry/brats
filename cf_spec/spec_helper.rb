@@ -83,14 +83,27 @@ def bump_buildpack_version(buildpack:)
   FileUtils.mkdir_p('tmp')
   File.write("tmp/#{buildpack}-buildpack/VERSION", '99.99.99')
   Bundler.with_clean_env do
-    system(<<-EOF)
-           cd tmp/#{buildpack}-buildpack
-           export BUNDLE_GEMFILE=cf.Gemfile
-           bundle install
-           bundle exec buildpack-packager --cached
-           cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip
-           echo "\n\nBumping version of #{buildpack}-brat-buildpack\n\n"
-    EOF
+    if File.exists?('cf.Gemfile')
+      system(<<-EOF)
+             cd tmp/#{buildpack}-buildpack
+             export BUNDLE_GEMFILE=cf.Gemfile
+             bundle install
+             bundle exec buildpack-packager --cached
+             cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip
+             echo "\n\nBumping version of #{buildpack}-brat-buildpack\n\n"
+      EOF
+    elsif Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first
+      Dir.chdir(Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first) do
+        system('go install')
+      end
+      system(env, <<-EOF)
+             buildpack-packager --cached
+             cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip
+             echo "\n\nBumping version of #{buildpack}-brat-buildpack\n\n"
+      EOF
+    else
+      raise 'Could not determine buildpack-packager install method'
+    end
   end
 end
 
@@ -112,14 +125,29 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :
     Dir.chdir("tmp/#{buildpack}-buildpack") do
       block.call if block
 
-      system(env, <<-EOF)
-        set -e
-        bundle install
-        bundle exec buildpack-packager --#{buildpack_caching} || bundle exec buildpack-packager #{buildpack_caching}
-        cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
+      if File.exists?('cf.Gemfile')
+        system(env, <<-EOF)
+          set -e
+          bundle install
+          bundle exec buildpack-packager --#{buildpack_caching} || bundle exec buildpack-packager #{buildpack_caching}
+          cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
 
-        echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
-      EOF
+          echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
+        EOF
+      elsif Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first
+        Dir.chdir(Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first) do
+          system('go install')
+        end
+        system(env, <<-EOF)
+          set -e
+          buildpack-packager --#{buildpack_caching}
+          cf create-buildpack #{buildpack}-brat-buildpack $(ls *_buildpack*.zip | head -n 1) #{position} --enable
+
+          echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
+        EOF
+      else
+        raise 'Could not determine buildpack-packager install method'
+      end
     end
   end
 end
