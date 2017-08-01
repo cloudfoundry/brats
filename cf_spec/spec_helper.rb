@@ -83,7 +83,7 @@ def bump_buildpack_version(buildpack:)
   FileUtils.mkdir_p('tmp')
   File.write("tmp/#{buildpack}-buildpack/VERSION", '99.99.99')
   Bundler.with_clean_env do
-    if File.exists?('cf.Gemfile')
+    if File.exists?("tmp/#{buildpack}-buildpack/cf.Gemfile")
       system(<<-EOF)
              cd tmp/#{buildpack}-buildpack
              export BUNDLE_GEMFILE=cf.Gemfile
@@ -92,8 +92,8 @@ def bump_buildpack_version(buildpack:)
              cf update-buildpack #{buildpack}-brat-buildpack -p #{buildpack}_buildpack-cached-v99.99.99.zip
              echo "\n\nBumping version of #{buildpack}-brat-buildpack\n\n"
       EOF
-    elsif Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first
-      Dir.chdir(Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first) do
+    elsif Dir.glob("tmp/#{buildpack}-buildpack/src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager").first
+      Dir.chdir(Dir.glob("tmp/#{buildpack}-buildpack/src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager").first) do
         system('go install')
       end
       system(env, <<-EOF)
