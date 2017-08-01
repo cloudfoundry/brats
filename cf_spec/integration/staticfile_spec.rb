@@ -56,6 +56,7 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
+        expect(app).to_not have_logged('password')
         expect(app).to have_logged(staticfile_uri)
       end
     end
@@ -63,10 +64,12 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:staticfile_uri) { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_nginx_nginx-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
+      let(:staticfile_uri) { Regexp.new('/nginx-[\d\.]+-linux-x64-[0-9a-f]+.tgz') }
+
 
       it 'does not include credentials in logged dependency file paths' do
         expect(app).to_not have_logged(credential_uri)
+        expect(app).to_not have_logged('password')
         expect(app).to have_logged(staticfile_uri)
       end
     end
