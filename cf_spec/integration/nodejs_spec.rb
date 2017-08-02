@@ -228,10 +228,11 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
       let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:node_uri)       { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/node/node-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
+      let(:node_uri)       { Regexp.new(Regexp.quote('/node-[\d\.]+-linux-x64-[\da-f]+.tgz')) }
 
       it 'does not include credentials in logged dependency uris' do
         expect(app).to_not have_logged(credential_uri)
+        expect(app).to_not have_logged("password")
         expect(app).to have_logged(node_uri)
       end
     end
