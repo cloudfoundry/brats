@@ -125,8 +125,8 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :
       block.call if block
 
       if Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first
-        system(env, <<-EOF)
-          set -e
+        system(env, <<-EOF) or raise "Could not install buildpack"
+          set -ex
           export GOPATH=$PWD
           export GOBIN=$GOPATH/.bin
           (cd src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager && go install)
@@ -137,7 +137,7 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :
           echo "\n\nRunning Brats tests on: $GITHUB_URL\nUsing git branch: #{branch}\nLatest $(git log -1)\n\n"
         EOF
       else
-        system(env, <<-EOF)
+        system(env, <<-EOF) or raise "Could not install buildpack"
           set -e
           bundle install
           bundle exec buildpack-packager --#{buildpack_caching} || bundle exec buildpack-packager #{buildpack_caching}
