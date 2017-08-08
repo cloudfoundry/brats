@@ -124,7 +124,7 @@ def install_buildpack(buildpack:, branch: BUILDPACK_BRANCH, buildpack_caching: :
     Dir.chdir("tmp/#{buildpack}-buildpack") do
       block.call if block
 
-      if Dir.glob('src/*/vendor/github.com/cloudfoundry/libbuildpack/packager/buildpack-packager').first
+      if YAML.load_file('manifest.yml').keys.include?('include_files')
         system(env, <<-EOF) or raise "Could not install buildpack"
           set -ex
           export GOPATH=$PWD
