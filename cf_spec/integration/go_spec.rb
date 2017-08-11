@@ -106,10 +106,11 @@ describe 'For all supported Go versions', language: 'go' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:go_uri)       { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_go_go') + '[\d\.]+' + Regexp.quote('.linux-amd64-') + '[\da-f]+\.tar\.gz') }
+      let(:go_uri)         { Regexp.new('go[\d\.]+\.linux\-amd64\-[\da-f]+\.tar\.gz') }
 
       it 'does not include credentials in logged dependency file paths' do
         expect(app).to_not have_logged(credential_uri)
+        expect(app).to_not have_logged('password')
         expect(app).to have_logged(go_uri)
       end
     end
