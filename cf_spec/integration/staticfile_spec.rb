@@ -64,7 +64,7 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
     context "using a cached buildpack" do
       let(:caching)        { :cached }
       let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:staticfile_uri) { Regexp.new('/nginx-[\d\.]+-linux-x64-[0-9a-f]+.tgz') }
+      let(:staticfile_uri) { Regexp.new('nginx-[\d\.]+-linux-x64-[0-9a-f]+.tgz') }
 
 
       it 'does not include credentials in logged dependency file paths' do
