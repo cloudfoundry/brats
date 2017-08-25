@@ -20,7 +20,7 @@ RSpec.shared_examples :a_deploy_of_ruby_app_to_cf do |ruby_version, stack|
 
     it 'installs the correct version of Ruby' do
       expect(@app).to be_running
-      expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}"
+      expect(@app).to have_logged "Installing ruby #{ruby_version}"
       2.times do
         browser.visit_path('/version')
         expect(browser).to have_body(ruby_version)
@@ -102,10 +102,10 @@ describe 'For the ruby buildpack', language: 'ruby' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'prints useful warning message to stdout' do
-      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      expect(app).to_not have_logged(/WARNING.*buildpack version changed from/)
       bump_buildpack_version(buildpack: 'ruby')
       Machete.push(app)
-      expect(app).to have_logged('WARNING: buildpack version changed from')
+      expect(app).to have_logged(/WARNING.*buildpack version changed from/)
     end
   end
 
@@ -139,16 +139,14 @@ describe 'For the ruby buildpack', language: 'ruby' do
       deploy_app(template: app_template, stack: stack, buildpack: 'ruby-brat-buildpack')
     end
 
-    let(:version_line) { ruby_version.gsub(/\.\d+$/,'') }
+    let(:version_line) { ruby_version.gsub(/\.\d+$/,'.x') }
     let(:eol_date) { (Date.today + 10) }
-    let(:warning_message) { /WARNING: ruby #{version_line} will no longer be available in new buildpacks released after/ }
-
+    let(:warning_message) { /WARNING.*ruby 2.1.x will no longer be available in new buildpacks released after/ }
     before do
       cleanup_buildpack(buildpack: 'ruby')
       install_buildpack(buildpack: 'ruby', buildpack_caching: caching) do
         hash = YAML.load_file('manifest.yml')
         hash['dependency_deprecation_dates'] = [{
-          'match' => version_line + '\.\d+',
           'version_line' => version_line,
           'name' => 'ruby',
           'date' => eol_date
@@ -197,7 +195,7 @@ describe 'For the ruby buildpack', language: 'ruby' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'logs a warning that tells the user to upgrade the dependency' do
-      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of ruby is available in this buildpack/)
+      expect(app).to have_logged(/WARNING.*A newer version of ruby is available in this buildpack/)
     end
   end
 
@@ -218,23 +216,23 @@ describe 'For the ruby buildpack', language: 'ruby' do
 
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
-      let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:ruby_uri)       { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/ruby/ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
+      let(:ruby_uri)       { Regexp.new(Regexp.quote('ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
 
       it 'does not include credentials in logged dependency uris' do
-        expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(ruby_uri)
+        expect(app).to_not have_logged('login')
+        expect(app).to_not have_logged('password')
       end
     end
 
     context "using a cached buildpack" do
       let(:caching)        { :cached }
-      let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:ruby_uri)       { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_ruby_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
+      let(:ruby_uri)       { Regexp.new(Regexp.quote('ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
 
       it 'does not include credentials in logged dependency file paths' do
-        expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(ruby_uri)
+        expect(app).to_not have_logged('login')
+        expect(app).to_not have_logged('password')
       end
     end
   end

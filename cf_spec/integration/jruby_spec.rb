@@ -20,7 +20,7 @@ RSpec.shared_examples :a_deploy_of_jruby_app_to_cf do |ruby_version, jruby_versi
 
     it 'installs the correct version of JRuby' do
       expect(@app).to be_running
-      expect(@app).to have_logged "Using Ruby version: ruby-#{ruby_version}-jruby-#{jruby_version}"
+      expect(@app).to have_logged "Installing jruby ruby-#{ruby_version}-jruby-#{jruby_version}"
     end
 
     it 'runs a simple webserver' do
@@ -125,29 +125,23 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
 
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
-      let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password@') }
-      let(:jruby_uri)      { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/') +
-                                        '(manual-binaries\/)?' +
-                                        Regexp.quote('jruby/jruby-') + '[\d\.]+' +
-                                        Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
+      let(:jruby_uri)      { Regexp.new(Regexp.quote('jruby-') + '[\d\.]+' + Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
 
       it 'does not include credentials in logged dependency uris' do
-        expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(jruby_uri)
+        expect(app).to_not have_logged('login')
+        expect(app).to_not have_logged('password')
       end
     end
 
     context "using a cached buildpack" do
       let(:caching)        { :cached }
-      let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:jruby_uri)      { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_') +
-                                        '(manual-binaries_)?' +
-                                        Regexp.quote('jruby_jruby-') + '[\d\.]+' +
-                                        Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
+      let(:jruby_uri)      { Regexp.new(Regexp.quote('jruby-') + '[\d\.]+' + Regexp.quote('_ruby-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+\.tgz') }
 
       it 'does not include credentials in logged dependency file paths' do
-        expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(jruby_uri)
+        expect(app).to_not have_logged('login')
+        expect(app).to_not have_logged('password')
       end
     end
   end
