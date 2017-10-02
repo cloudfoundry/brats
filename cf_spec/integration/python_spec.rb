@@ -95,10 +95,10 @@ describe 'For the python buildpack', language: 'python' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'prints useful warning message to stdout' do
-      expect(app).to_not have_logged('WARNING: buildpack version changed from')
+      expect(app).to_not have_logged(/WARNING.* buildpack version changed from/)
       bump_buildpack_version(buildpack: 'python')
       Machete.push(app)
-      expect(app).to have_logged('WARNING: buildpack version changed from')
+      expect(app).to have_logged(/WARNING.* buildpack version changed from/)
     end
   end
 
@@ -110,16 +110,15 @@ describe 'For the python buildpack', language: 'python' do
       deploy_app(template: app_template, stack: stack, buildpack: 'python-brat-buildpack')
     end
 
-    let(:version_line) { python_version.gsub(/\.\d+$/,'') }
+    let(:version_line) { python_version.gsub(/\.\d+$/,'.x') }
     let(:eol_date) { (Date.today + 10) }
-    let(:warning_message) { /WARNING: python #{version_line} will no longer be available in new buildpacks released after/ }
+    let(:warning_message) { /WARNING.* python #{version_line} will no longer be available in new buildpacks released after/ }
 
     before do
       cleanup_buildpack(buildpack: 'python')
       install_buildpack(buildpack: 'python', buildpack_caching: caching) do
         hash = YAML.load_file('manifest.yml')
         hash['dependency_deprecation_dates'] = [{
-          'match' => version_line + '\.\d+',
           'version_line' => version_line,
           'name' => 'python',
           'date' => eol_date
@@ -168,7 +167,7 @@ describe 'For the python buildpack', language: 'python' do
     after { Machete::CF::DeleteApp.new.execute(app) }
 
     it 'logs a warning that tells the user to upgrade the dependency' do
-      expect(app).to have_logged(/\*\*WARNING\*\* A newer version of python is available in this buildpack/)
+      expect(app).to have_logged(/WARNING.* A newer version of python is available in this buildpack/)
     end
   end
 
@@ -213,23 +212,23 @@ describe 'For the python buildpack', language: 'python' do
 
     context "using an uncached buildpack" do
       let(:caching)        { :uncached }
-      let(:credential_uri) { Regexp.new(Regexp.quote('https://') + 'login:password[@]') }
-      let(:python_uri)     { Regexp.new(Regexp.quote('https://-redacted-:-redacted-@buildpacks.cloudfoundry.org/dependencies/python/python-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
+      let(:python_uri)     { Regexp.new(Regexp.quote('python-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
 
       it 'does not include credentials in logged dependency uris' do
-        expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(python_uri)
+        expect(app).to_not have_logged('login')
+        expect(app).to_not have_logged('password')
       end
     end
 
     context "using a cached buildpack" do
       let(:caching)        { :cached }
-      let(:credential_uri) { Regexp.new('https___login_password') }
-      let(:python_uri)     { Regexp.new(Regexp.quote('https___-redacted-_-redacted-@buildpacks.cloudfoundry.org_dependencies_python_python-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
+      let(:python_uri)     { Regexp.new(Regexp.quote('python-') + '[\d\.]+' + Regexp.quote('-linux-x64-') + '[\da-f]+' + Regexp.quote('.tgz')) }
 
       it 'does not include credentials in logged dependency file paths' do
-        expect(app).to_not have_logged(credential_uri)
         expect(app).to have_logged(python_uri)
+        expect(app).to_not have_logged('login')
+        expect(app).to_not have_logged('password')
       end
     end
   end
