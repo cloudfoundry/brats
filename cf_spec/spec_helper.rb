@@ -163,6 +163,7 @@ def put_credentials_in_uris_in_manifest(manifest_path)
   dependencies = manifest_hash["dependencies"]
 
   dependencies.each do |dep|
+    next if dep['name'] == 'CAAPM'
     uri = URI(dep["uri"])
     uri.user = 'login'
     uri.password = 'password'
