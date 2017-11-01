@@ -60,15 +60,11 @@ RSpec.shared_examples :a_deploy_of_nodejs_app_to_cf do |nodejs_version, stack|
       end
     end
 
-    # bson-ext does not support the v8 engine and hence node 6, 7, 8 and 9
-    # context: https://github.com/christkv/bson-ext/issues/28#issuecomment-212258411
-    unless /[6789]\.\d+\.\d+/ =~ nodejs_version
-      it 'supports bson-ext' do
-        expect(@app).to be_running
-        2.times do
-          browser.visit_path('/bson-ext')
-          expect(browser).to have_body('Hello Bson-ext!')
-        end
+    it 'supports bson-ext' do
+      expect(@app).to be_running
+      2.times do
+        browser.visit_path('/bson-ext')
+        expect(browser).to have_body('Hello Bson-ext!')
       end
     end
 

@@ -30,8 +30,8 @@ class NodeJSTemplateApp
         'node' => nodejs_version
       },
       'dependencies' => {
-        'bcrypt' => '0.8.6',
-        'bson-ext' => '0.1.13'
+        'bcrypt' => '*',
+        'bson-ext' => '*'
       }
     }
     File.write(
