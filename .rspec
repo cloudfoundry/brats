@@ -1,5 +1,3 @@
 --color
---require rspec/instafail
 -I cf_spec/
--f RSpec::Instafail
 -f documentation

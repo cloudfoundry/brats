@@ -59,8 +59,6 @@ GEM
     rspec-expectations (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
-    rspec-instafail (1.0.0)
-      rspec
     rspec-mocks (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
@@ -92,7 +90,6 @@ DEPENDENCIES
   machete!
   pry
   rspec
-  rspec-instafail
   rubocop
   rubocop-rspec
 
