@@ -6,6 +6,7 @@ require 'machete/matchers'
 require 'open-uri'
 require 'yaml'
 require 'shellwords'
+require 'rspec/retry'
 
 `mkdir -p log`
 Machete.logger = Machete::Logger.new('log/integration.log')
@@ -16,6 +17,16 @@ def missing_buildpack_branch
   'passed to rspec'
 end
 
+RSpec.configure do |config|
+  config.color = true
+  config.tty = true
+  if config.filter.rules[:language] == 'dotnet-core'
+    config.verbose_retry = true
+    config.default_retry_count = 3
+    config.default_sleep_interval = 5
+  end
+end
+
 BUILDPACK_BRANCH = RSpec.configure do |config|
   branch = config.filter.rules[:buildpack_branch]
   raise missing_buildpack_branch if branch.nil?
@@ -24,9 +35,6 @@ end
 
 def is_current_user_language_tag?(language)
   RSpec.configure do |config|
-    config.color = true
-    config.tty = true
-
     language == config.filter.rules[:language]
   end
 end
