@@ -178,7 +178,11 @@ end
 def install_java_buildpack(branch: BUILDPACK_BRANCH, position: 100)
   FileUtils.mkdir_p('tmp')
   Bundler.with_clean_env do
-    system(<<-EOF)
+    env = {
+      'GITHUB_URL' => "https://github.com/cloudfoundry/java-buildpack",
+      'BUNDLE_GEMFILE' => 'Gemfile'
+    }
+    system(env, <<-EOF)
       set -e
       GITHUB_URL=https://github.com/cloudfoundry/java-buildpack
       git clone -q -b #{branch} --depth 1 --recursive "$GITHUB_URL" tmp/java-buildpack
