@@ -20,11 +20,9 @@ end
 RSpec.configure do |config|
   config.color = true
   config.tty = true
-  if config.filter.rules[:language] == 'dotnet-core'
-    config.verbose_retry = true
-    config.default_retry_count = 3
-    config.default_sleep_interval = 5
-  end
+  config.verbose_retry = true
+  config.default_retry_count = 3
+  config.default_sleep_interval = 5
 end
 
 BUILDPACK_BRANCH = RSpec.configure do |config|
