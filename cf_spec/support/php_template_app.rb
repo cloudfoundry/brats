@@ -104,7 +104,7 @@ class PHPTemplateApp
 
     case major_minor_version
     when '7.2' then
-      @options['PHP_EXTENSIONS'] = common_extensions - %w(mcrypt)
+      @options['PHP_EXTENSIONS'] = common_extensions - %w(mcrypt solr)
       @options['ZEND_EXTENSIONS'] = %w(ioncube opcache)
     when '7.1' then
       @options['PHP_EXTENSIONS'] = common_extensions
