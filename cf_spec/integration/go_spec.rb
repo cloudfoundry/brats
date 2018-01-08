@@ -32,8 +32,6 @@ RSpec.shared_examples :a_deploy_of_go_app_to_cf do |go_version, stack|
 end
 
 describe 'For all supported Go versions', language: 'go' do
-  let(:stack) { 'cflinuxfs2' }
-
   before(:all) do
     cleanup_buildpack(buildpack: 'go')
     install_buildpack(buildpack: 'go')
@@ -44,18 +42,15 @@ describe 'For all supported Go versions', language: 'go' do
   end
 
   if is_current_user_language_tag?('go')
-    ['cflinuxfs2'].each do |stack|
-      context "on the #{stack} stack", stack: stack do
-        go_versions = dependency_versions_in_manifest('go','go',stack)
-        go_versions.each do |go_version|
-          it_behaves_like :a_deploy_of_go_app_to_cf, go_version, stack
-        end
+    context "on the #{stack} stack", stack: stack do
+      go_versions = dependency_versions_in_manifest('go','go',stack)
+      go_versions.each do |go_version|
+        it_behaves_like :a_deploy_of_go_app_to_cf, go_version, stack
       end
     end
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:go_version) { dependency_versions_in_manifest('go', 'go', stack).last }
     let(:app) do
       app_template = generate_go_app(go_version)
@@ -78,7 +73,6 @@ describe 'For all supported Go versions', language: 'go' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:go_version) { dependency_versions_in_manifest('go', 'go', stack).last }
     let(:app) do
       app_template = generate_go_app(go_version)
@@ -117,7 +111,6 @@ describe 'For all supported Go versions', language: 'go' do
   end
 
   describe 'staging with a version of go that is not the latest patch release in the manifest' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:go_version) do
       dependency_versions_in_manifest('go', 'go', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -169,7 +162,6 @@ describe 'For all supported Go versions', language: 'go' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:go_version) { dependency_versions_in_manifest('go', 'go', stack).last }
     let(:app) do
       app_template = generate_go_app(go_version)
@@ -189,7 +181,6 @@ describe 'For all supported Go versions', language: 'go' do
 end
 
 describe 'staging with go buildpack that sets EOL on dependency' do
-  let(:stack)      { 'cflinuxfs2' }
   let(:go_version) { dependency_versions_in_manifest('go', 'go', stack).last }
   let(:app) do
     app_template = generate_go_app(go_version)

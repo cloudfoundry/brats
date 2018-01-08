@@ -80,7 +80,6 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
     let(:app) do
       app_template = generate_nodejs_app(nodejs_version)
@@ -103,7 +102,6 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   end
 
   describe 'staging with a version of node that is not the latest patch release in the manifest' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:node_version) do
       dependency_versions_in_manifest('nodejs', 'node', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -134,27 +132,24 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
     end
 
     if is_current_user_language_tag?('nodejs')
-      ['cflinuxfs2'].each do |stack|
-        context "on the #{stack} stack", stack: stack do
+      context "on the #{stack} stack", stack: stack do
 
-          nodejs_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
+        nodejs_versions = dependency_versions_in_manifest('nodejs', 'node', stack)
 
-          nodejs_versions.each do |nodejs_version|
-            it_behaves_like :a_deploy_of_nodejs_app_to_cf, nodejs_version, stack
-          end
+        nodejs_versions.each do |nodejs_version|
+          it_behaves_like :a_deploy_of_nodejs_app_to_cf, nodejs_version, stack
+        end
 
-          nodejs_versions.map { |nodejs_version|
-            '~>' + /(\d+)\.(\d+)/.match(nodejs_version)[0] + '.0'
-          }.uniq.each do |squiggle_version|
-            it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
-          end
+        nodejs_versions.map { |nodejs_version|
+          '~>' + /(\d+)\.(\d+)/.match(nodejs_version)[0] + '.0'
+        }.uniq.each do |squiggle_version|
+          it_behaves_like :a_deploy_of_nodejs_app_with_version_range, squiggle_version, stack
         end
       end
     end
   end
 
   describe 'staging with custom buildpack that sets EOL on dependency' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
     let(:app) do
       app_template = generate_nodejs_app(nodejs_version)
@@ -207,7 +202,6 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
     let(:app) do
       app_template = generate_nodejs_app(nodejs_version)
@@ -247,7 +241,6 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
     let(:app) do
       app_template = generate_nodejs_app(nodejs_version)
@@ -275,7 +268,6 @@ describe 'For the nodejs buildpack', language: 'nodejs' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:nodejs_version) { dependency_versions_in_manifest('nodejs', 'node', stack).last }
     let(:app) do
       app_template = generate_nodejs_app(nodejs_version)

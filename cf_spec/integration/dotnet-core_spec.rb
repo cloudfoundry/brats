@@ -38,7 +38,6 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)             { 'cflinuxfs2' }
     let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort.last }
     let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).sort.last }
     let(:app) do
@@ -68,29 +67,27 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
     end
 
     if is_current_user_language_tag?('dotnet-core')
-      ['cflinuxfs2'].each do |stack|
-        context "on the #{stack} stack", stack: stack do
-          project_json_sdk_to_framework = {
-            '1.0.0-preview2-003156' => '1.0.3',
-            '1.0.0-preview2-1-003177' => '1.1.0',
-          }
+      context "on the #{stack} stack", stack: stack do
+        project_json_sdk_to_framework = {
+          '1.0.0-preview2-003156' => '1.0.3',
+          '1.0.0-preview2-1-003177' => '1.1.0',
+        }
 
-          sdk_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
-          framework_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack)
+        sdk_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet', stack)
+        framework_versions = dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack)
 
-          sdk_versions.each do |sdk|
-            framework_versions.each do |framework|
-              if project_json_sdk_to_framework.keys.include? sdk
-                if Gem::Version.new(framework) < Gem::Version.new(project_json_sdk_to_framework[sdk])
-                  next
-                end
-              end
-              if Gem::Version.new(framework).segments.first != Gem::Version.new(sdk).segments.first
+        sdk_versions.each do |sdk|
+          framework_versions.each do |framework|
+            if project_json_sdk_to_framework.keys.include? sdk
+              if Gem::Version.new(framework) < Gem::Version.new(project_json_sdk_to_framework[sdk])
                 next
               end
-
-              it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, sdk, framework, stack
             end
+            if Gem::Version.new(framework).segments.first != Gem::Version.new(sdk).segments.first
+              next
+            end
+
+            it_behaves_like :a_deploy_of_dotnet_core_app_to_cf, sdk, framework, stack
           end
         end
       end
@@ -98,7 +95,6 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'staging with dotnet buildpack that sets EOL on dependency' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:sdk_version) do
       dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -149,7 +145,6 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'staging with a version of dotnet that is not the latest patch release in the manifest' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:sdk_version) do
       dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -175,7 +170,6 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)             { 'cflinuxfs2' }
     let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).last }
     let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).last }
 
@@ -215,7 +209,6 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort.last }
     let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).sort.last }
 
@@ -246,7 +239,6 @@ describe 'For the .NET Core buildpack', language: 'dotnet-core' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:sdk_version)       { dependency_versions_in_manifest('dotnet-core', 'dotnet', stack).sort.last }
     let(:framework_version) { dependency_versions_in_manifest('dotnet-core', 'dotnet-framework', stack).sort.last }
 

@@ -13,7 +13,6 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)         { 'cflinuxfs2' }
     let(:app) do
       app_template = generate_staticfile_app
       deploy_app(template: app_template, stack: stack, buildpack: 'staticfile-brat-buildpack')
@@ -35,7 +34,6 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)         { 'cflinuxfs2' }
     let(:nginx_version) { dependency_versions_in_manifest('staticfile', 'nginx', stack).last }
     let(:app) do
       app_template = generate_staticfile_app
@@ -76,7 +74,6 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:app) do
       app_template = generate_staticfile_app
       add_dot_profile_script_to_app(app_template.full_path)
@@ -103,7 +100,6 @@ describe 'For the staticfile buildpack', language: 'staticfile' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:app) do
       app_template = generate_staticfile_app
       deploy_app(template: app_template, stack: stack, buildpack: 'staticfile-brat-buildpack')

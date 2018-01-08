@@ -66,7 +66,6 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)         { 'cflinuxfs2' }
     let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
     let(:app) do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
@@ -98,17 +97,15 @@ describe 'For the php buildpack', language: 'php' do
     valid_web_servers  = %w(httpd nginx)
 
     if is_current_user_language_tag?('php')
-      ['cflinuxfs2'].each do |stack|
-        context "on the #{stack} stack", stack: stack do
-          php_versions = dependency_versions_in_manifest('php', 'php', stack)
+      context "on the #{stack} stack", stack: stack do
+        php_versions = dependency_versions_in_manifest('php', 'php', stack)
 
-          dependencies = parsed_manifest(buildpack: 'php').fetch('dependencies')
-          web_servers  = dependencies.select { |binary| valid_web_servers.include?(binary['name']) && binary['cf_stacks'].include?('cflinuxfs2') }
+        dependencies = parsed_manifest(buildpack: 'php').fetch('dependencies')
+        web_servers  = dependencies.select { |binary| valid_web_servers.include?(binary['name']) && binary['cf_stacks'].include?(stack) }
 
-          php_versions.each do |php_version|
-            web_servers.each do |web_server|
-              it_behaves_like :a_deploy_of_php_app_to_cf, php_version, web_server, stack
-            end
+        php_versions.each do |php_version|
+          web_servers.each do |web_server|
+            it_behaves_like :a_deploy_of_php_app_to_cf, php_version, web_server, stack
           end
         end
       end
@@ -116,7 +113,6 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'staging with php buildpack that sets EOL on dependency' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:php_version) do
       dependency_versions_in_manifest('php', 'php', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -166,7 +162,6 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'staging with a version of php that is not the latest patch release in the manifest' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:php_version) do
       dependency_versions_in_manifest('php', 'php', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -192,7 +187,6 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)         { 'cflinuxfs2' }
     let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
     let(:major_version) { php_version.split(".").first }
     let(:php_in_uri)    { major_version == '7' ? 'php7' : 'php' }
@@ -234,7 +228,6 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
     let(:app) do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
@@ -263,7 +256,6 @@ describe 'For the php buildpack', language: 'php' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:php_version)   { dependency_versions_in_manifest('php', 'php', stack).last }
     let(:app) do
       nginx_version = dependency_versions_in_manifest('php', 'nginx', stack).last
