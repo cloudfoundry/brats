@@ -89,24 +89,21 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
     end
 
     if is_current_user_language_tag?('ruby')
-      ['cflinuxfs2'].each do |stack|
-        context "On #{stack} stack", stack: stack do
+      context "On #{stack} stack", stack: stack do
 
-        jruby_versions = dependency_versions_in_manifest('ruby','jruby',stack)
+      jruby_versions = dependency_versions_in_manifest('ruby','jruby',stack)
 
-        jruby_versions.each do |jruby_version_string|
-            match_data = jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
-            ruby_version = match_data[1]
-            jruby_version = match_data[2]
-            it_behaves_like :a_deploy_of_jruby_app_to_cf, ruby_version, jruby_version, stack
-          end
+      jruby_versions.each do |jruby_version_string|
+          match_data = jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
+          ruby_version = match_data[1]
+          jruby_version = match_data[2]
+          it_behaves_like :a_deploy_of_jruby_app_to_cf, ruby_version, jruby_version, stack
         end
       end
     end
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
     let(:app) do
       jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
@@ -147,7 +144,6 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
     let(:app) do
       jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)
@@ -178,7 +174,6 @@ describe 'For JRuby in the ruby buildpack', language: 'ruby' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:jruby_version_string) { dependency_versions_in_manifest('ruby', 'jruby', stack).last }
     let(:app) do
       jruby_version_string.match(/ruby-(.*)-jruby-(.*)/)

@@ -13,7 +13,6 @@ describe 'For the binary buildpack', language: 'binary' do
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)         { 'cflinuxfs2' }
     let(:app) do
       app_template = generate_binary_app
       deploy_app(template: app_template, stack: stack, buildpack: 'binary-brat-buildpack')
@@ -35,7 +34,6 @@ describe 'For the binary buildpack', language: 'binary' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:app) do
       app_template = generate_binary_app
       add_dot_profile_script_to_app(app_template.full_path)
@@ -62,7 +60,6 @@ describe 'For the binary buildpack', language: 'binary' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:app) do
       app_template = generate_binary_app
       deploy_app(template: app_template, stack: stack, buildpack: 'binary-brat-buildpack')

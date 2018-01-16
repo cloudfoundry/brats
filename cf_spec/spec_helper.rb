@@ -31,6 +31,10 @@ BUILDPACK_BRANCH = RSpec.configure do |config|
   branch
 end
 
+def stack
+  ENV["CF_STACK"] || 'cflinuxfs2'
+end
+
 def is_current_user_language_tag?(language)
   RSpec.configure do |config|
     language == config.filter.rules[:language]

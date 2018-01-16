@@ -80,7 +80,6 @@ describe 'For the python buildpack', language: 'python' do
   end
 
   describe 'deploying an app with an updated version of the same buildpack' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
     let(:app) do
       app_template = generate_python_app(python_version)
@@ -103,7 +102,6 @@ describe 'For the python buildpack', language: 'python' do
   end
 
   describe 'staging with python buildpack that sets EOL on dependency' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
     let(:app) do
       app_template = generate_python_app(python_version)
@@ -147,7 +145,6 @@ describe 'For the python buildpack', language: 'python' do
   end
 
   describe 'staging with a version of python that is not the latest patch release in the manifest' do
-    let(:stack)      { 'cflinuxfs2' }
     let(:python_version) do
       dependency_versions_in_manifest('python', 'python', stack).sort do |ver1, ver2|
         Gem::Version.new(ver1) <=> Gem::Version.new(ver2)
@@ -179,24 +176,21 @@ describe 'For the python buildpack', language: 'python' do
 
 
     if is_current_user_language_tag?('python')
-      ['cflinuxfs2'].each do |stack|
-        context "on the #{stack} stack", stack: stack do
-          python_ucs2_versions = dependency_versions_in_manifest('python', 'python-ucs2', stack)
-          python_ucs2_versions.each do |python_version|
-            it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack, true
-          end
+      context "on the #{stack} stack", stack: stack do
+        python_ucs2_versions = dependency_versions_in_manifest('python', 'python-ucs2', stack)
+        python_ucs2_versions.each do |python_version|
+          it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack, true
+        end
 
-          python_versions = dependency_versions_in_manifest('python', 'python', stack)
-          python_versions.each do |python_version|
-            it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack, false
-          end
+        python_versions = dependency_versions_in_manifest('python', 'python', stack)
+        python_versions.each do |python_version|
+          it_behaves_like :a_deploy_of_python_app_to_cf, python_version, stack, false
         end
       end
     end
   end
 
   describe 'staging with custom buildpack that uses credentials in manifest dependency uris' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
     let(:app) do
       app_template = generate_python_app(python_version)
@@ -234,7 +228,6 @@ describe 'For the python buildpack', language: 'python' do
   end
 
   describe 'deploying an app that has an executable .profile script' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
     let(:app) do
       app_template = generate_python_app(python_version)
@@ -262,7 +255,6 @@ describe 'For the python buildpack', language: 'python' do
   end
 
   describe 'deploying an app that has sensitive environment variables' do
-    let(:stack)          { 'cflinuxfs2' }
     let(:python_version) { dependency_versions_in_manifest('python', 'python', stack).last }
     let(:app) do
       app_template = generate_python_app(python_version)
