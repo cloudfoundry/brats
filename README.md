@@ -1,6 +1,24 @@
 Buildpack Runtime Acceptance Tests
 ---
 
+## Deprecation
+
+This repo is in the process of being replaced by brats tests inside each
+buildpack repo.  To run BRATs tests we recommend using those new tests. As an
+example, to run BRATs for the ruby buildpack:
+
+```
+mkdir -p ~/workspace
+cd ~/workspace
+
+git clone https://github.com/cloudfoundry/ruby-buildpack.git
+cd ~/workspace/ruby-buildpack
+
+cf api api.cf-deployment.com
+
+./scripts/brats.sh
+```
+
 ### Functionality
 
 Test that the compiled binaries of the buildpacks are working as expected.
